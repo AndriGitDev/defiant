@@ -17,6 +17,24 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
   const exploitCount = availableCVEs.filter(cve => cve.exploitAvailable).length;
   const hasExploits = exploitCount > 0;
 
+  // Extract vendors from affected products
+  const vendorCounts = availableCVEs.reduce((acc, cve) => {
+    cve.affectedProducts.forEach(product => {
+      // Extract vendor name (typically the first part before space or underscore)
+      const vendor = product.split(/[\s_:]/)[0].toLowerCase();
+      if (vendor && vendor.length > 2) {
+        acc[vendor] = (acc[vendor] || 0) + 1;
+      }
+    });
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Get top 8 vendors
+  const topVendors = Object.entries(vendorCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8)
+    .map(([vendor, count]) => ({ vendor, count }));
+
   return (
     <div className="border border-cyber-blue/30 panel-bg p-3 rounded-lg mb-4">
       <div className="flex flex-col gap-3">
@@ -91,25 +109,48 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
             </div>
 
             {/* Quick Filters Tags */}
-            {availableCVEs.length > 0 && hasExploits && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-xs text-cyber-text-dim">Quick:</span>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFilters({ ...filters, exploitAvailable: !filters.exploitAvailable });
-                  }}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-all ${
-                    filters.exploitAvailable
-                      ? 'bg-red-500/30 border border-red-500/50 text-red-400'
-                      : 'bg-red-500/10 border border-red-500/30 text-red-500/70 hover:bg-red-500/20 hover:border-red-500/40'
-                  }`}
-                >
-                  <span className="flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Exploits ({exploitCount})
-                  </span>
-                </button>
+            {availableCVEs.length > 0 && (hasExploits || topVendors.length > 0) && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs text-cyber-text-dim">Quick Filters:</span>
+                <div className="flex flex-wrap gap-2">
+                  {hasExploits && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setFilters({ ...filters, exploitAvailable: !filters.exploitAvailable });
+                      }}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                        filters.exploitAvailable
+                          ? 'bg-red-500/30 border border-red-500/50 text-red-400'
+                          : 'bg-red-500/10 border border-red-500/30 text-red-500/70 hover:bg-red-500/20 hover:border-red-500/40'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">
+                        <Shield className="w-3 h-3" />
+                        Exploits ({exploitCount})
+                      </span>
+                    </button>
+                  )}
+                  {topVendors.map(({ vendor, count }) => (
+                    <button
+                      key={vendor}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setFilters({
+                          ...filters,
+                          vendor: filters.vendor === vendor ? undefined : vendor
+                        });
+                      }}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-all capitalize ${
+                        filters.vendor === vendor
+                          ? 'bg-cyber-purple/30 border border-cyber-purple/50 text-cyber-purple'
+                          : 'bg-cyber-purple/10 border border-cyber-purple/30 text-cyber-purple/70 hover:bg-cyber-purple/20 hover:border-cyber-purple/40'
+                      }`}
+                    >
+                      {vendor} ({count})
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -127,7 +168,7 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
       </div>
 
       {/* Active Filters Display */}
-      {(filters.severity !== "all" || filters.searchTerm || filters.dataSource !== "ALL" || filters.exploitAvailable) && (
+      {(filters.severity !== "all" || filters.searchTerm || filters.dataSource !== "ALL" || filters.exploitAvailable || filters.vendor) && (
         <div className="mt-4 flex flex-wrap gap-2">
           {filters.dataSource !== "ALL" && (
             <span className="px-3 py-1.5 bg-cyber-green/20 border border-cyber-green/50 rounded text-sm text-cyber-green font-medium">
@@ -147,6 +188,11 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
           {filters.exploitAvailable && (
             <span className="px-3 py-1.5 bg-red-500/20 border border-red-500/50 rounded text-sm text-red-500 font-medium">
               Exploits Available
+            </span>
+          )}
+          {filters.vendor && (
+            <span className="px-3 py-1.5 bg-cyber-purple/20 border border-cyber-purple/50 rounded text-sm text-cyber-purple font-medium capitalize">
+              Vendor: {filters.vendor}
             </span>
           )}
           <button

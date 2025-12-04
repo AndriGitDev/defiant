@@ -28,7 +28,7 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
     loadCVEs();
   }, [filters.dateRange, filters.dataSource, onCVEsLoad]);
 
-  // Filter CVEs based on search, severity, and exploit availability
+  // Filter CVEs based on search, severity, exploit availability, and vendor
   const filteredCVEs = cves.filter((cve) => {
     const matchesSeverity = filters.severity === "all" || cve.severity === filters.severity;
     const matchesSearch =
@@ -39,8 +39,11 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
         p.toLowerCase().includes(filters.searchTerm.toLowerCase())
       );
     const matchesExploit = filters.exploitAvailable === undefined || filters.exploitAvailable === false || cve.exploitAvailable === true;
+    const matchesVendor = !filters.vendor || cve.affectedProducts.some(product =>
+      product.toLowerCase().includes(filters.vendor!.toLowerCase())
+    );
 
-    return matchesSeverity && matchesSearch && matchesExploit;
+    return matchesSeverity && matchesSearch && matchesExploit && matchesVendor;
   }).slice(0, 50); // Limit to 50 results to prevent page from breaking
 
   // Get severity color
