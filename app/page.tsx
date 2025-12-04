@@ -36,12 +36,12 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden">
+    <main className="relative min-h-screen">
       {/* 3D Background */}
       <CyberBackground />
 
       {/* Main Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 pb-8">
         <Header onResetFilters={handleResetFilters} />
 
         <div className="container mx-auto px-4 py-8">
