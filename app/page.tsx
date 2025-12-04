@@ -18,6 +18,7 @@ export default function Home() {
     dataSource: "ALL",
   });
   const [stats, setStats] = useState<Stats | null>(null);
+  const [availableCVEs, setAvailableCVEs] = useState<CVEItem[]>([]);
 
   const handleResetFilters = () => {
     setFilters({
@@ -50,12 +51,13 @@ export default function Home() {
           <StatsPanel filters={filters} onSeverityFilter={handleSeverityFilter} onStatsUpdate={setStats} />
 
           {/* Search & Filter Panel */}
-          <SearchPanel filters={filters} setFilters={setFilters} />
+          <SearchPanel filters={filters} setFilters={setFilters} availableCVEs={availableCVEs} />
 
           {/* 3D Timeline Visualization */}
           <TimelineView
             filters={filters}
             onSelectCVE={setSelectedCVE}
+            onCVEsLoad={setAvailableCVEs}
           />
         </div>
       </div>

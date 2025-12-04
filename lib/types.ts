@@ -33,6 +33,7 @@ export interface FilterState {
   dateRange: string;
   searchTerm: string;
   dataSource: DataSource;
+  exploitAvailable?: boolean;
 }
 
 export interface Stats {

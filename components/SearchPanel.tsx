@@ -1,16 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Filter, Calendar, Database } from "lucide-react";
-import { FilterState } from "@/lib/types";
+import { Search, Filter, Calendar, Database, Shield } from "lucide-react";
+import { FilterState, CVEItem } from "@/lib/types";
 
 interface SearchPanelProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
+  availableCVEs?: CVEItem[];
 }
 
-export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
+export default function SearchPanel({ filters, setFilters, availableCVEs = [] }: SearchPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Extract tags from available CVEs
+  const exploitCount = availableCVEs.filter(cve => cve.exploitAvailable).length;
+  const hasExploits = exploitCount > 0;
 
   return (
     <div className="cyber-border panel-bg p-3 rounded-lg mb-4">
@@ -99,7 +104,7 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
       </div>
 
       {/* Active Filters Display */}
-      {(filters.severity !== "all" || filters.searchTerm || filters.dataSource !== "ALL") && (
+      {(filters.severity !== "all" || filters.searchTerm || filters.dataSource !== "ALL" || filters.exploitAvailable) && (
         <div className="mt-4 flex flex-wrap gap-2">
           {filters.dataSource !== "ALL" && (
             <span className="px-3 py-1.5 bg-cyber-green/20 border border-cyber-green/50 rounded text-sm text-cyber-green font-medium">
@@ -116,12 +121,41 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
               Search: {filters.searchTerm}
             </span>
           )}
+          {filters.exploitAvailable && (
+            <span className="px-3 py-1.5 bg-red-500/20 border border-red-500/50 rounded text-sm text-red-500 font-medium">
+              Exploits Available
+            </span>
+          )}
           <button
             onClick={() => setFilters({ severity: "all", dateRange: "30", searchTerm: "", dataSource: "ALL" })}
             className="px-3 py-1.5 bg-cyber-dark border border-cyber-blue/30 rounded text-sm text-cyber-text hover:border-cyber-blue transition-all font-medium"
           >
             Clear Filters
           </button>
+        </div>
+      )}
+
+      {/* Available Filter Tags */}
+      {availableCVEs.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-cyber-blue/20">
+          <p className="text-xs text-cyber-text-dim mb-2">Quick Filters:</p>
+          <div className="flex flex-wrap gap-2">
+            {hasExploits && (
+              <button
+                onClick={() => setFilters({ ...filters, exploitAvailable: !filters.exploitAvailable })}
+                className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                  filters.exploitAvailable
+                    ? 'bg-red-500/30 border border-red-500/50 text-red-400'
+                    : 'bg-red-500/10 border border-red-500/30 text-red-500/70 hover:bg-red-500/20 hover:border-red-500/40'
+                }`}
+              >
+                <span className="flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  Exploits ({exploitCount})
+                </span>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
