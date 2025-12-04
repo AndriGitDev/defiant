@@ -67,6 +67,8 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
               onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
               className="w-full bg-cyber-black/50 border border-cyber-purple/30 rounded pl-10 pr-8 py-3 text-cyber-purple focus:outline-none focus:border-cyber-purple focus:border-glow transition-all appearance-none cursor-pointer"
             >
+              <option value="1">Last 24 Hours</option>
+              <option value="3">Last 3 Days</option>
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
               <option value="90">Last 90 Days</option>
