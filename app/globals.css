@@ -24,9 +24,20 @@
     @apply bg-cyber-black;
     color: var(--cyber-text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    line-height: 1.6;
+    height: 100%;
+  }
+
+  html {
     overflow-x: hidden;
     overflow-y: auto;
-    line-height: 1.6;
+    height: 100%;
+  }
+
+  body.modal-open {
+    overflow: hidden !important;
   }
 
   code, pre, .font-mono {

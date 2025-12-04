@@ -49,7 +49,7 @@ export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProp
       value: stats.critical,
       color: "text-cyber-pink",
       bgColor: "bg-cyber-pink/10",
-      severity: "critical",
+      severity: "CRITICAL",
     },
     {
       icon: TrendingUp,
@@ -57,7 +57,7 @@ export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProp
       value: stats.high,
       color: "text-red-400",
       bgColor: "bg-red-400/10",
-      severity: "high",
+      severity: "HIGH",
     },
     {
       icon: Clock,
@@ -65,7 +65,7 @@ export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProp
       value: stats.medium,
       color: "text-cyber-yellow",
       bgColor: "bg-cyber-yellow/10",
-      severity: "medium",
+      severity: "MEDIUM",
     },
   ];
 
