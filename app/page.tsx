@@ -18,14 +18,24 @@ export default function Home() {
     dataSource: "ALL",
   });
 
+  const handleResetFilters = () => {
+    setFilters({
+      severity: "all",
+      dateRange: "30",
+      searchTerm: "",
+      dataSource: "ALL",
+    });
+    setSelectedCVE(null);
+  };
+
   return (
-    <main className="relative min-h-screen overflow-hidden">
+    <main className="relative min-h-screen overflow-x-hidden">
       {/* 3D Background */}
       <CyberBackground />
 
       {/* Main Content */}
       <div className="relative z-10">
-        <Header />
+        <Header onResetFilters={handleResetFilters} />
 
         <div className="container mx-auto px-4 py-8">
           {/* Stats Panel */}

@@ -33,8 +33,18 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
     }
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only close if clicking the backdrop itself, not the modal content
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cyber-black/90 backdrop-blur-md">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cyber-black/90 backdrop-blur-md"
+      onClick={handleBackdropClick}
+    >
       <div
         className="cyber-border panel-bg-solid rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         style={{
