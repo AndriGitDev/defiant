@@ -2,12 +2,22 @@
 
 import { Shield, Activity } from "lucide-react";
 
-export default function Header() {
+interface HeaderProps {
+  onResetFilters?: () => void;
+}
+
+export default function Header({ onResetFilters }: HeaderProps) {
   return (
     <header className="border-b border-cyber-blue/30 panel-bg-solid">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div
+            className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={onResetFilters}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && onResetFilters?.()}
+          >
             <Shield className="w-12 h-12 text-cyber-pink animate-pulse" />
             <div>
               <h1 className="text-4xl md:text-5xl font-bold text-cyber-text text-shadow-glow glitch" data-text="DEFIANT">
@@ -26,6 +36,17 @@ export default function Header() {
             </div>
             <div className="text-xs text-cyber-text-dim text-right">
               NVD + EUVD Integration
+            </div>
+            <div className="text-xs text-cyber-text-dim text-right">
+              Powered by{" "}
+              <a
+                href="https://andri.is"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyber-blue hover:text-cyber-pink transition-colors hover:text-shadow-glow"
+              >
+                Andri.is
+              </a>
             </div>
           </div>
         </div>
