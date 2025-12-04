@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, TrendingUp, Database, Clock, Globe } from "lucide-react";
+import { AlertTriangle, TrendingUp, Database, Clock } from "lucide-react";
 import { Stats, FilterState } from "@/lib/types";
 import { fetchCVEsFromAllSources, getCVEStats } from "@/lib/vulnerabilityApi";
 
 interface StatsPanelProps {
   filters?: FilterState;
   onSeverityFilter?: (severity: string) => void;
+  onStatsUpdate?: (stats: Stats) => void;
 }
 
-export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProps) {
+export default function StatsPanel({ filters, onSeverityFilter, onStatsUpdate }: StatsPanelProps) {
   const [stats, setStats] = useState<Stats>({
     totalCVEs: 0,
     critical: 0,
@@ -28,11 +29,12 @@ export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProp
       const cves = await fetchCVEsFromAllSources(30, "ALL");
       const newStats = getCVEStats(cves);
       setStats(newStats);
+      onStatsUpdate?.(newStats);
       setLoading(false);
     }
 
     loadStats();
-  }, []);
+  }, [onStatsUpdate]);
 
   const statCards = [
     {
@@ -70,7 +72,7 @@ export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProp
   ];
 
   return (
-    <div className="space-y-4 mb-8">
+    <div className="mb-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
@@ -105,25 +107,6 @@ export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProp
           );
         })}
       </div>
-
-      {/* Data Sources Row */}
-      {stats.bySource && !loading && (
-        <div className="flex flex-wrap gap-4 items-center panel-bg p-4 rounded-lg cyber-border">
-          <Globe className="w-5 h-5 text-cyber-green" />
-          <span className="text-sm text-cyber-text font-medium">Data Sources:</span>
-          <div className="flex gap-4">
-            <span className="text-sm text-cyber-blue">
-              <span className="font-mono font-bold">{stats.bySource.nvd}</span> from NVD
-            </span>
-            <span className="text-sm text-cyber-purple">
-              <span className="font-mono font-bold">{stats.bySource.euvd}</span> from EUVD
-            </span>
-          </div>
-          <span className="text-xs text-cyber-text-dim ml-auto">
-            Last updated: {new Date(stats.lastUpdated).toLocaleTimeString()}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

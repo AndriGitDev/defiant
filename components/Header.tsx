@@ -1,12 +1,14 @@
 "use client";
 
 import { Shield, Activity } from "lucide-react";
+import { Stats } from "@/lib/types";
 
 interface HeaderProps {
   onResetFilters?: () => void;
+  stats?: Stats;
 }
 
-export default function Header({ onResetFilters }: HeaderProps) {
+export default function Header({ onResetFilters, stats }: HeaderProps) {
   return (
     <header className="border-b border-cyber-blue/30 panel-bg-solid">
       <div className="container mx-auto px-4 py-3">
@@ -35,9 +37,15 @@ export default function Header({ onResetFilters }: HeaderProps) {
               <span className="text-cyber-green text-xs font-mono font-semibold">ONLINE</span>
             </div>
 
-            <div className="hidden md:flex items-center gap-1 px-2 py-1 border border-cyber-blue/30 bg-cyber-blue/5 rounded">
-              <span className="text-cyber-blue text-xs font-mono">NVD + EUVD</span>
-            </div>
+            {stats?.bySource && (
+              <div className="hidden md:flex items-center gap-2 px-2 py-1 border border-cyber-blue/30 bg-cyber-blue/5 rounded">
+                <span className="text-cyber-blue text-xs font-mono font-bold">{stats.bySource.nvd}</span>
+                <span className="text-cyber-blue/50 text-xs">NVD</span>
+                <span className="text-cyber-text-dim text-xs">|</span>
+                <span className="text-cyber-purple text-xs font-mono font-bold">{stats.bySource.euvd}</span>
+                <span className="text-cyber-purple/50 text-xs">EUVD</span>
+              </div>
+            )}
 
             <div className="text-xs text-cyber-text-dim hidden lg:block">
               Powered by{" "}
