@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DEFIANT | Breach Timeline",
-  description: "Interactive 3D timeline of security vulnerabilities and breaches. Real-time CVE data visualization.",
-  keywords: ["CVE", "security", "vulnerabilities", "cybersecurity", "breach timeline"],
+  title: "DEFIANT | Real-Time Global Vulnerability Tracker",
+  description: "Real-time CVE vulnerability tracking from NVD and EUVD. Interactive visualization of critical security vulnerabilities and exploits.",
+  keywords: ["CVE", "security", "vulnerabilities", "cybersecurity", "NVD", "EUVD", "exploit tracking"],
 };
 
 export default function RootLayout({
