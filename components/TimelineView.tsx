@@ -38,7 +38,7 @@ export default function TimelineView({ filters, onSelectCVE }: TimelineViewProps
       );
 
     return matchesSeverity && matchesSearch;
-  });
+  }).slice(0, 50); // Limit to 50 results to prevent page from breaking
 
   // Get severity color
   const getSeverityColor = (severity: string) => {
