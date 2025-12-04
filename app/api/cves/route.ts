@@ -61,7 +61,14 @@ export async function GET(request: NextRequest) {
       timeout: 15000,
     });
 
-    console.log(`[API Route] NVD API response: ${response.data.vulnerabilities?.length || 0} CVEs found`);
+    const vulnCount = response.data.vulnerabilities?.length || 0;
+    console.log(`[API Route] NVD API response: ${vulnCount} CVEs found`);
+
+    // Log first few CVE IDs for debugging
+    if (vulnCount > 0) {
+      const cveIds = response.data.vulnerabilities.slice(0, 5).map((v: any) => v.cve.id);
+      console.log(`[API Route] First CVEs: ${cveIds.join(', ')}`);
+    }
 
     return NextResponse.json({
       success: true,
