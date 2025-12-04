@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Filter, Calendar, Database } from "lucide-react";
+import { Search, Filter, Calendar } from "lucide-react";
 import { FilterState } from "@/lib/types";
 
 interface SearchPanelProps {
@@ -13,18 +13,18 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="cyber-border panel-bg p-6 rounded-lg mb-8">
-      <div className="flex flex-col gap-4">
+    <div className="cyber-border panel-bg p-3 rounded-lg mb-4">
+      <div className="flex flex-col gap-3">
         {/* Search Input */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cyber-blue/50" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyber-blue/50" />
           <input
             type="text"
             placeholder="Search CVEs, Products, Vendors... (Click to show filters)"
             value={filters.searchTerm}
             onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
             onFocus={() => setIsExpanded(true)}
-            className="w-full bg-cyber-black/50 border border-cyber-blue/30 rounded pl-10 pr-4 py-3 text-cyber-text placeholder-cyber-text-dim/50 focus:outline-none focus:border-cyber-blue focus:border-glow transition-all text-base"
+            className="w-full bg-cyber-black/50 border border-cyber-blue/30 rounded pl-9 pr-3 py-2 text-cyber-text placeholder-cyber-text-dim/50 focus:outline-none focus:border-cyber-blue focus:border-glow transition-all text-sm"
           />
         </div>
 
@@ -34,30 +34,16 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
             isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="flex flex-col gap-4">
-            {/* Top Row: Data Source and Severity */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Data Source Filter */}
-              <div className="relative flex-1">
-                <Database className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cyber-green/50" />
-                <select
-                  value={filters.dataSource}
-                  onChange={(e) => setFilters({ ...filters, dataSource: e.target.value as any })}
-                  className="w-full bg-cyber-black/50 border border-cyber-green/30 rounded pl-10 pr-8 py-3 text-cyber-green focus:outline-none focus:border-cyber-green focus:border-glow transition-all appearance-none cursor-pointer"
-                >
-                  <option value="ALL">ALL SOURCES</option>
-                  <option value="NVD">NVD ONLY</option>
-                  <option value="EUVD">EUVD ONLY</option>
-                </select>
-              </div>
-
+          <div className="flex flex-col gap-3">
+            {/* Severity and Date Range Row */}
+            <div className="flex flex-col sm:flex-row gap-3">
               {/* Severity Filter */}
               <div className="relative flex-1">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cyber-pink/50" />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyber-pink/50" />
                 <select
                   value={filters.severity}
                   onChange={(e) => setFilters({ ...filters, severity: e.target.value })}
-                  className="w-full bg-cyber-black/50 border border-cyber-pink/30 rounded pl-10 pr-8 py-3 text-cyber-pink focus:outline-none focus:border-cyber-pink focus:border-glow transition-all appearance-none cursor-pointer"
+                  className="w-full bg-cyber-black/50 border border-cyber-pink/30 rounded pl-9 pr-8 py-2 text-cyber-pink text-sm focus:outline-none focus:border-cyber-pink focus:border-glow transition-all appearance-none cursor-pointer"
                 >
                   <option value="all">All Severities</option>
                   <option value="CRITICAL">Critical</option>
@@ -66,17 +52,14 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
                   <option value="LOW">Low</option>
                 </select>
               </div>
-            </div>
 
-            {/* Bottom Row: Date Range */}
-            <div className="flex flex-col sm:flex-row gap-4">
               {/* Date Range Filter */}
               <div className="relative flex-1">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cyber-purple/50" />
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyber-purple/50" />
                 <select
                   value={filters.dateRange}
                   onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
-                  className="w-full bg-cyber-black/50 border border-cyber-purple/30 rounded pl-10 pr-8 py-3 text-cyber-purple focus:outline-none focus:border-cyber-purple focus:border-glow transition-all appearance-none cursor-pointer"
+                  className="w-full bg-cyber-black/50 border border-cyber-purple/30 rounded pl-9 pr-8 py-2 text-cyber-purple text-sm focus:outline-none focus:border-cyber-purple focus:border-glow transition-all appearance-none cursor-pointer"
                 >
                   <option value="1">Last 24 Hours</option>
                   <option value="3">Last 3 Days</option>
@@ -90,7 +73,7 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
               {/* Hide Filters Button */}
               <button
                 onClick={() => setIsExpanded(false)}
-                className="px-4 py-3 bg-cyber-dark border border-cyber-blue/30 rounded text-sm text-cyber-text hover:border-cyber-blue transition-all font-medium"
+                className="px-3 py-2 bg-cyber-dark border border-cyber-blue/30 rounded text-xs text-cyber-text hover:border-cyber-blue transition-all font-medium whitespace-nowrap"
               >
                 Hide Filters
               </button>

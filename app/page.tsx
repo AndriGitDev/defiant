@@ -42,7 +42,7 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="relative z-10 pb-8">
-        <Header onResetFilters={handleResetFilters} />
+        <Header onResetFilters={handleResetFilters} filters={filters} setFilters={setFilters} />
 
         <div className="container mx-auto px-4 py-8">
           {/* Stats Panel */}
