@@ -7,7 +7,7 @@ import TimelineView from "@/components/TimelineView";
 import SearchPanel from "@/components/SearchPanel";
 import CVEDetailModal from "@/components/CVEDetailModal";
 import StatsPanel from "@/components/StatsPanel";
-import { CVEItem, FilterState } from "@/lib/types";
+import { CVEItem, FilterState, Stats } from "@/lib/types";
 
 export default function Home() {
   const [selectedCVE, setSelectedCVE] = useState<CVEItem | null>(null);
@@ -17,6 +17,7 @@ export default function Home() {
     searchTerm: "",
     dataSource: "ALL",
   });
+  const [stats, setStats] = useState<Stats | null>(null);
 
   const handleResetFilters = () => {
     setFilters({
@@ -42,11 +43,11 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="relative z-10 pb-8">
-        <Header onResetFilters={handleResetFilters} />
+        <Header onResetFilters={handleResetFilters} stats={stats || undefined} />
 
         <div className="container mx-auto px-4 py-8">
           {/* Stats Panel */}
-          <StatsPanel filters={filters} onSeverityFilter={handleSeverityFilter} />
+          <StatsPanel filters={filters} onSeverityFilter={handleSeverityFilter} onStatsUpdate={setStats} />
 
           {/* Search & Filter Panel */}
           <SearchPanel filters={filters} setFilters={setFilters} />
