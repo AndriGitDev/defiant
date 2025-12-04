@@ -8,9 +8,10 @@ import { Loader2, Database } from "lucide-react";
 interface TimelineViewProps {
   filters: FilterState;
   onSelectCVE: (cve: CVEItem) => void;
+  onCVEsLoad?: (cves: CVEItem[]) => void;
 }
 
-export default function TimelineView({ filters, onSelectCVE }: TimelineViewProps) {
+export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: TimelineViewProps) {
   const [cves, setCves] = useState<CVEItem[]>([]);
   const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -20,13 +21,14 @@ export default function TimelineView({ filters, onSelectCVE }: TimelineViewProps
       setLoading(true);
       const data = await fetchCVEsFromAllSources(parseInt(filters.dateRange), filters.dataSource);
       setCves(data);
+      onCVEsLoad?.(data);
       setLoading(false);
     }
 
     loadCVEs();
-  }, [filters.dateRange, filters.dataSource]);
+  }, [filters.dateRange, filters.dataSource, onCVEsLoad]);
 
-  // Filter CVEs based on search and severity
+  // Filter CVEs based on search, severity, and exploit availability
   const filteredCVEs = cves.filter((cve) => {
     const matchesSeverity = filters.severity === "all" || cve.severity === filters.severity;
     const matchesSearch =
@@ -36,8 +38,9 @@ export default function TimelineView({ filters, onSelectCVE }: TimelineViewProps
       cve.affectedProducts.some((p) =>
         p.toLowerCase().includes(filters.searchTerm.toLowerCase())
       );
+    const matchesExploit = filters.exploitAvailable === undefined || filters.exploitAvailable === false || cve.exploitAvailable === true;
 
-    return matchesSeverity && matchesSearch;
+    return matchesSeverity && matchesSearch && matchesExploit;
   }).slice(0, 50); // Limit to 50 results to prevent page from breaking
 
   // Get severity color
