@@ -35,13 +35,13 @@ export async function GET(request: NextRequest) {
     if (searchTerm) {
       // Search query
       params.keywordSearch = searchTerm;
-      params.resultsPerPage = 100;
+      params.resultsPerPage = 50;
     } else {
-      // Date range query - using lastModStartDate to catch recently updated CVEs
-      // (including new CVEs and old CVEs with recent modifications)
-      params.lastModStartDate = startDate.toISOString();
-      params.lastModEndDate = endDate.toISOString();
-      params.resultsPerPage = 2000; // Maximum allowed by NVD API
+      // Date range query - using pubStartDate to only get recently PUBLISHED CVEs
+      // This prevents old CVEs from 2015 that were recently modified from showing up
+      params.pubStartDate = startDate.toISOString();
+      params.pubEndDate = endDate.toISOString();
+      params.resultsPerPage = 100; // Reasonable limit to prevent page from breaking
     }
 
     console.log(`[API Route] Fetching CVEs from NVD API with params:`, params);
