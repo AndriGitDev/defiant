@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, TrendingUp, Database, Clock } from "lucide-react";
+import { AlertTriangle, TrendingUp, Database, Clock, Globe } from "lucide-react";
 import { Stats } from "@/lib/types";
-import { fetchRecentCVEs } from "@/lib/nvdApi";
+import { fetchCVEsFromAllSources, getCVEStats } from "@/lib/vulnerabilityApi";
 
 export default function StatsPanel() {
   const [stats, setStats] = useState<Stats>({
@@ -13,23 +13,15 @@ export default function StatsPanel() {
     medium: 0,
     low: 0,
     lastUpdated: new Date().toISOString(),
+    bySource: { nvd: 0, euvd: 0 },
   });
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadStats() {
-      const cves = await fetchRecentCVEs(30);
-
-      const newStats: Stats = {
-        totalCVEs: cves.length,
-        critical: cves.filter((c) => c.severity === "CRITICAL").length,
-        high: cves.filter((c) => c.severity === "HIGH").length,
-        medium: cves.filter((c) => c.severity === "MEDIUM").length,
-        low: cves.filter((c) => c.severity === "LOW").length,
-        lastUpdated: new Date().toISOString(),
-      };
-
+      const cves = await fetchCVEsFromAllSources(30, "ALL");
+      const newStats = getCVEStats(cves);
       setStats(newStats);
       setLoading(false);
     }
@@ -40,53 +32,80 @@ export default function StatsPanel() {
   const statCards = [
     {
       icon: Database,
-      label: "TOTAL CVEs (30d)",
+      label: "Total CVEs (30 days)",
       value: stats.totalCVEs,
-      color: "cyber-blue",
+      color: "text-cyber-blue",
+      bgColor: "bg-cyber-blue/10",
     },
     {
       icon: AlertTriangle,
-      label: "CRITICAL",
+      label: "Critical",
       value: stats.critical,
-      color: "cyber-pink",
+      color: "text-cyber-pink",
+      bgColor: "bg-cyber-pink/10",
     },
     {
       icon: TrendingUp,
-      label: "HIGH",
+      label: "High",
       value: stats.high,
-      color: "red-500",
+      color: "text-red-400",
+      bgColor: "bg-red-400/10",
     },
     {
       icon: Clock,
-      label: "MEDIUM",
+      label: "Medium",
       value: stats.medium,
-      color: "cyber-yellow",
+      color: "text-cyber-yellow",
+      bgColor: "bg-cyber-yellow/10",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {statCards.map((stat, index) => {
-        const Icon = stat.icon;
-        return (
-          <div
-            key={index}
-            className="cyber-border bg-cyber-dark/50 backdrop-blur-sm p-6 rounded-lg hover:bg-cyber-dark/70 transition-all"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Icon className={`w-6 h-6 text-${stat.color}`} />
-              {loading ? (
-                <div className="h-8 w-16 bg-cyber-blue/20 animate-pulse rounded" />
-              ) : (
-                <span className={`text-3xl font-bold text-${stat.color} text-shadow-glow`}>
-                  {stat.value}
-                </span>
-              )}
+    <div className="space-y-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={index}
+              className="cyber-border panel-bg p-6 rounded-lg hover:panel-bg-solid transition-all"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                  <Icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+                {loading ? (
+                  <div className="h-10 w-20 bg-cyber-blue/20 animate-pulse rounded" />
+                ) : (
+                  <span className={`text-4xl font-bold ${stat.color}`}>
+                    {stat.value}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-cyber-text-dim font-medium">{stat.label}</p>
             </div>
-            <p className="text-xs text-cyber-blue/70 tracking-wider">{stat.label}</p>
+          );
+        })}
+      </div>
+
+      {/* Data Sources Row */}
+      {stats.bySource && !loading && (
+        <div className="flex flex-wrap gap-4 items-center panel-bg p-4 rounded-lg cyber-border">
+          <Globe className="w-5 h-5 text-cyber-green" />
+          <span className="text-sm text-cyber-text font-medium">Data Sources:</span>
+          <div className="flex gap-4">
+            <span className="text-sm text-cyber-blue">
+              <span className="font-mono font-bold">{stats.bySource.nvd}</span> from NVD
+            </span>
+            <span className="text-sm text-cyber-purple">
+              <span className="font-mono font-bold">{stats.bySource.euvd}</span> from EUVD
+            </span>
           </div>
-        );
-      })}
+          <span className="text-xs text-cyber-text-dim ml-auto">
+            Last updated: {new Date(stats.lastUpdated).toLocaleTimeString()}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
