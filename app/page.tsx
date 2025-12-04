@@ -28,6 +28,13 @@ export default function Home() {
     setSelectedCVE(null);
   };
 
+  const handleSeverityFilter = (severity: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      severity: severity,
+    }));
+  };
+
   return (
     <main className="relative min-h-screen overflow-x-hidden">
       {/* 3D Background */}
@@ -39,7 +46,7 @@ export default function Home() {
 
         <div className="container mx-auto px-4 py-8">
           {/* Stats Panel */}
-          <StatsPanel />
+          <StatsPanel filters={filters} onSeverityFilter={handleSeverityFilter} />
 
           {/* Search & Filter Panel */}
           <SearchPanel filters={filters} setFilters={setFilters} />

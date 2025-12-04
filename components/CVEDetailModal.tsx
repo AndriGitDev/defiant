@@ -12,9 +12,10 @@ interface CVEDetailModalProps {
 export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
   useEffect(() => {
     // Prevent body scroll when modal is open
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = originalOverflow || "auto";
     };
   }, []);
 

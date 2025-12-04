@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, TrendingUp, Database, Clock, Globe } from "lucide-react";
-import { Stats } from "@/lib/types";
+import { Stats, FilterState } from "@/lib/types";
 import { fetchCVEsFromAllSources, getCVEStats } from "@/lib/vulnerabilityApi";
 
-export default function StatsPanel() {
+interface StatsPanelProps {
+  filters?: FilterState;
+  onSeverityFilter?: (severity: string) => void;
+}
+
+export default function StatsPanel({ filters, onSeverityFilter }: StatsPanelProps) {
   const [stats, setStats] = useState<Stats>({
     totalCVEs: 0,
     critical: 0,
@@ -36,6 +41,7 @@ export default function StatsPanel() {
       value: stats.totalCVEs,
       color: "text-cyber-blue",
       bgColor: "bg-cyber-blue/10",
+      severity: "all",
     },
     {
       icon: AlertTriangle,
@@ -43,6 +49,7 @@ export default function StatsPanel() {
       value: stats.critical,
       color: "text-cyber-pink",
       bgColor: "bg-cyber-pink/10",
+      severity: "critical",
     },
     {
       icon: TrendingUp,
@@ -50,6 +57,7 @@ export default function StatsPanel() {
       value: stats.high,
       color: "text-red-400",
       bgColor: "bg-red-400/10",
+      severity: "high",
     },
     {
       icon: Clock,
@@ -57,6 +65,7 @@ export default function StatsPanel() {
       value: stats.medium,
       color: "text-cyber-yellow",
       bgColor: "bg-cyber-yellow/10",
+      severity: "medium",
     },
   ];
 
@@ -65,10 +74,19 @@ export default function StatsPanel() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
+          const isActive = filters?.severity === stat.severity;
           return (
             <div
               key={index}
-              className="cyber-border panel-bg p-6 rounded-lg hover:panel-bg-solid transition-all"
+              onClick={() => onSeverityFilter?.(stat.severity)}
+              className={`cyber-border panel-bg p-6 rounded-lg transition-all cursor-pointer ${
+                isActive
+                  ? 'panel-bg-solid ring-2 ring-cyber-blue shadow-lg scale-105'
+                  : 'hover:panel-bg-solid hover:scale-102'
+              }`}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && onSeverityFilter?.(stat.severity)}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className={`p-2 rounded-lg ${stat.bgColor}`}>
