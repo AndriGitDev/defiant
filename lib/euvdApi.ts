@@ -28,7 +28,7 @@ export async function fetchEUVDCVEs(days: number = 30): Promise<CVEItem[]> {
   }
 }
 
-// Generate mock EUVD data with EU-focused vulnerabilities
+// Generate mock EUVD data with EU-focused vulnerabilities (Updated with 2025 CVEs)
 function generateMockEUVDCVEs(count: number): CVEItem[] {
   const severities: CVEItem["severity"][] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
   const euVendors = [
@@ -39,6 +39,8 @@ function generateMockEUVDCVEs(count: number): CVEItem[] {
     "Industrial Control System", "PLCs", "SCADA", "Telecom Equipment",
     "Semiconductor Tools", "Aviation Systems", "ERP System", "Network Infrastructure"
   ];
+
+  const currentYear = new Date().getFullYear();
 
   return Array.from({ length: count }, (_, i) => {
     const severity = severities[Math.floor(Math.random() * severities.length)];
@@ -52,7 +54,7 @@ function generateMockEUVDCVEs(count: number): CVEItem[] {
       : severity === "MEDIUM" ? 4 + Math.random() * 3
       : Math.random() * 4;
 
-    const cveId = `CVE-2024-${String(60000 + i).padStart(5, '0')}`;
+    const cveId = `CVE-${currentYear}-${String(60000 + i).padStart(5, '0')}`;
 
     return {
       id: `euvd-${cveId}`,
