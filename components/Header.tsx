@@ -1,12 +1,15 @@
 "use client";
 
-import { Shield, Activity } from "lucide-react";
+import { Shield, Activity, Database } from "lucide-react";
+import { FilterState } from "@/lib/types";
 
 interface HeaderProps {
   onResetFilters?: () => void;
+  filters?: FilterState;
+  setFilters?: (filters: FilterState) => void;
 }
 
-export default function Header({ onResetFilters }: HeaderProps) {
+export default function Header({ onResetFilters, filters, setFilters }: HeaderProps) {
   return (
     <header className="border-b border-cyber-blue/30 panel-bg-solid">
       <div className="container mx-auto px-4 py-3">
@@ -29,13 +32,29 @@ export default function Header({ onResetFilters }: HeaderProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 border border-cyber-green/50 bg-cyber-green/10 rounded">
               <Activity className="w-3.5 h-3.5 text-cyber-green animate-pulse" />
               <span className="text-cyber-green text-xs font-mono font-semibold">ONLINE</span>
             </div>
-            <div className="text-xs text-cyber-text-dim hidden md:block">
-              NVD + EUVD | Powered by{" "}
+
+            {filters && setFilters && (
+              <div className="hidden md:flex items-center gap-2 px-2 py-1.5 border border-cyber-green/30 bg-cyber-green/5 rounded">
+                <Database className="w-3.5 h-3.5 text-cyber-green/70" />
+                <select
+                  value={filters.dataSource}
+                  onChange={(e) => setFilters({ ...filters, dataSource: e.target.value as any })}
+                  className="bg-transparent border-none text-cyber-green text-xs font-mono focus:outline-none appearance-none cursor-pointer pr-1"
+                >
+                  <option value="ALL">ALL</option>
+                  <option value="NVD">NVD</option>
+                  <option value="EUVD">EUVD</option>
+                </select>
+              </div>
+            )}
+
+            <div className="text-xs text-cyber-text-dim hidden lg:block">
+              Powered by{" "}
               <a
                 href="https://andri.is"
                 target="_blank"
