@@ -25,6 +25,7 @@
     color: var(--cyber-text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     overflow-x: hidden;
+    overflow-y: auto;
     line-height: 1.6;
   }
 
