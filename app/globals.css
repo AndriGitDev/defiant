@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
   --cyber-blue: #00f0ff;
   --cyber-pink: #ff006e;
@@ -9,6 +11,8 @@
   --cyber-green: #00ff41;
   --cyber-black: #0a0e27;
   --cyber-dark: #1a1f3a;
+  --cyber-text: #e0f4ff;
+  --cyber-text-dim: #a0c4d8;
 }
 
 @layer base {
@@ -17,9 +21,20 @@
   }
 
   body {
-    @apply bg-cyber-black text-cyber-blue;
-    font-family: 'Courier New', monospace;
+    @apply bg-cyber-black;
+    color: var(--cyber-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.3;
   }
 }
 
@@ -103,10 +118,10 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 2px;
+    height: 1px;
     background: linear-gradient(transparent, var(--cyber-blue), transparent);
-    opacity: 0.3;
-    animation: scan 8s linear infinite;
+    opacity: 0.15;
+    animation: scan 12s linear infinite;
     z-index: 50;
     pointer-events: none;
   }
@@ -114,5 +129,15 @@
   @keyframes scan {
     0% { transform: translateY(-100%); }
     100% { transform: translateY(100vh); }
+  }
+
+  .panel-bg {
+    background: rgba(26, 31, 58, 0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .panel-bg-solid {
+    background: rgba(26, 31, 58, 0.95);
+    backdrop-filter: blur(16px);
   }
 }

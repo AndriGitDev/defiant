@@ -17,6 +17,8 @@ const config: Config = {
           purple: "#8b5cf6",
           green: "#00ff41",
           yellow: "#ffdd00",
+          text: "#e0f4ff",
+          "text-dim": "#a0c4d8",
         },
       },
       animation: {

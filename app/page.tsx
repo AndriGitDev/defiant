@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import CyberBackground from "@/components/CyberBackground";
 import Header from "@/components/Header";
 import TimelineView from "@/components/TimelineView";
 import SearchPanel from "@/components/SearchPanel";
 import CVEDetailModal from "@/components/CVEDetailModal";
 import StatsPanel from "@/components/StatsPanel";
-import { CVEItem } from "@/lib/types";
+import { CVEItem, FilterState } from "@/lib/types";
 
 export default function Home() {
   const [selectedCVE, setSelectedCVE] = useState<CVEItem | null>(null);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterState>({
     severity: "all",
     dateRange: "30",
     searchTerm: "",
+    dataSource: "ALL",
   });
 
   return (

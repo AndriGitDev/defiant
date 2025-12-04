@@ -1,3 +1,5 @@
+export type DataSource = "NVD" | "EUVD" | "ALL";
+
 export interface CVEItem {
   id: string;
   cveId: string;
@@ -11,6 +13,7 @@ export interface CVEItem {
   weaknesses?: string[];
   exploitAvailable?: boolean;
   vector?: string;
+  source: DataSource;
 }
 
 export interface Breach {
@@ -29,6 +32,7 @@ export interface FilterState {
   severity: string;
   dateRange: string;
   searchTerm: string;
+  dataSource: DataSource;
 }
 
 export interface Stats {
@@ -38,4 +42,8 @@ export interface Stats {
   medium: number;
   low: number;
   lastUpdated: string;
+  bySource?: {
+    nvd: number;
+    euvd: number;
+  };
 }

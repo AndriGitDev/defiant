@@ -34,18 +34,18 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cyber-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cyber-black/90 backdrop-blur-md">
       <div
-        className="cyber-border bg-cyber-dark/95 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="cyber-border panel-bg-solid rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         style={{
           animation: "modalSlideIn 0.3s ease-out",
         }}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-cyber-dark/95 backdrop-blur-sm border-b border-cyber-blue/30 p-6 flex items-start justify-between">
+        <div className="sticky top-0 panel-bg-solid border-b border-cyber-blue/30 p-6 flex items-start justify-between z-10">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-3xl font-bold text-cyber-blue text-shadow-glow">
+            <div className="flex items-center flex-wrap gap-3 mb-2">
+              <h2 className="text-3xl font-bold text-cyber-text">
                 {cve.cveId}
               </h2>
               <span
@@ -55,14 +55,25 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
               >
                 {cve.severity}
               </span>
+              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                cve.source === "NVD" ? "bg-cyber-blue/20 text-cyber-blue" : "bg-cyber-purple/20 text-cyber-purple"
+              }`}>
+                {cve.source}
+              </span>
             </div>
-            <p className="text-sm text-cyber-blue/50">
-              Published: {new Date(cve.publishedDate).toLocaleString()}
+            <p className="text-sm text-cyber-text-dim">
+              Published: {new Date(cve.publishedDate).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-cyber-blue hover:text-cyber-pink transition-colors p-2"
+            className="text-cyber-text hover:text-cyber-pink transition-colors p-2 flex-shrink-0"
           >
             <X className="w-6 h-6" />
           </button>
@@ -71,10 +82,10 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* CVSS Score */}
-          <div className="cyber-border bg-cyber-black/50 p-4 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="cyber-border bg-cyber-black/50 p-5 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
               <Shield className="w-5 h-5 text-cyber-blue" />
-              <h3 className="text-lg font-bold text-cyber-blue">CVSS Score</h3>
+              <h3 className="text-lg font-bold text-cyber-text">CVSS Score</h3>
             </div>
             <div className="flex items-center gap-4">
               <div className={`text-5xl font-bold ${getSeverityColor(cve.severity).split(" ")[0]}`}>
@@ -96,19 +107,19 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
                   />
                 </div>
                 {cve.vector && (
-                  <p className="text-xs text-cyber-blue/70 font-mono">{cve.vector}</p>
+                  <p className="text-sm text-cyber-text-dim font-mono">{cve.vector}</p>
                 )}
               </div>
             </div>
           </div>
 
           {/* Description */}
-          <div className="cyber-border bg-cyber-black/50 p-4 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="cyber-border bg-cyber-black/50 p-5 rounded-lg">
+            <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="w-5 h-5 text-cyber-pink" />
-              <h3 className="text-lg font-bold text-cyber-blue">Description</h3>
+              <h3 className="text-lg font-bold text-cyber-text">Description</h3>
             </div>
-            <p className="text-cyber-blue/70 leading-relaxed">{cve.description}</p>
+            <p className="text-cyber-text-dim leading-relaxed text-base">{cve.description}</p>
           </div>
 
           {/* Affected Products */}

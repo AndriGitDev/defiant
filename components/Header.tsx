@@ -4,24 +4,29 @@ import { Shield, Activity } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="border-b border-cyber-blue/30 backdrop-blur-md">
+    <header className="border-b border-cyber-blue/30 panel-bg-solid">
       <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Shield className="w-10 h-10 text-cyber-pink animate-pulse" />
+            <Shield className="w-12 h-12 text-cyber-pink animate-pulse" />
             <div>
-              <h1 className="text-4xl font-bold text-shadow-glow glitch" data-text="DEFIANT">
+              <h1 className="text-4xl md:text-5xl font-bold text-cyber-text text-shadow-glow glitch" data-text="DEFIANT">
                 DEFIANT
               </h1>
-              <p className="text-sm text-cyber-blue/70 tracking-widest">
-                BREACH_TIMELINE // REAL-TIME CVE TRACKER
+              <p className="text-sm md:text-base text-cyber-text-dim tracking-wide mt-1">
+                Real-Time Global Vulnerability Tracker
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-2 border border-cyber-green/50 bg-cyber-green/10 rounded">
-            <Activity className="w-4 h-4 text-cyber-green animate-pulse" />
-            <span className="text-cyber-green text-sm font-mono">SYSTEM ONLINE</span>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 px-4 py-2 border border-cyber-green/50 bg-cyber-green/10 rounded">
+              <Activity className="w-4 h-4 text-cyber-green animate-pulse" />
+              <span className="text-cyber-green text-sm font-mono font-semibold">SYSTEM ONLINE</span>
+            </div>
+            <div className="text-xs text-cyber-text-dim text-right">
+              NVD + EUVD Integration
+            </div>
           </div>
         </div>
       </div>

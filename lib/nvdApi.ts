@@ -55,6 +55,7 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
         ) || [],
         exploitAvailable: false, // This would need additional API calls to determine
         vector: metrics?.cvssData?.vectorString,
+        source: "NVD" as const,
       };
     });
   } catch (error) {
@@ -102,6 +103,7 @@ export async function searchCVEs(searchTerm: string): Promise<CVEItem[]> {
           w.description?.map((d: any) => d.value) || []
         ) || [],
         vector: metrics?.cvssData?.vectorString,
+        source: "NVD" as const,
       };
     });
   } catch (error) {
@@ -144,6 +146,7 @@ function generateMockCVEs(count: number): CVEItem[] {
       weaknesses: ["CWE-79", "CWE-89"],
       exploitAvailable: Math.random() > 0.7,
       vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      source: "NVD" as const,
     };
   });
 }
