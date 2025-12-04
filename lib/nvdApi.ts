@@ -2,10 +2,12 @@ import axios from "axios";
 import { CVEItem } from "./types";
 
 const NVD_API_BASE = "https://services.nvd.nist.gov/rest/json/cves/2.0";
+const NVD_API_KEY = process.env.NEXT_PUBLIC_NVD_API_KEY || process.env.NVD_API_KEY;
 
 // Rate limiting: NVD requires 6 seconds between requests without API key
+// With API key: 50 requests per 30 seconds (much faster)
 let lastRequestTime = 0;
-const REQUEST_DELAY = 6000; // 6 seconds
+const REQUEST_DELAY = NVD_API_KEY ? 600 : 6000; // 0.6s with key, 6s without
 
 // Helper function to calculate CVSS severity from score
 function getSeverity(score: number): CVEItem["severity"] {
@@ -44,12 +46,20 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
     };
 
     console.log(`Fetching CVEs from NVD API with params:`, params);
+    console.log(`Using API key: ${NVD_API_KEY ? 'Yes' : 'No (using public rate limit)'}`);
+
+    const headers: Record<string, string> = {
+      "Accept": "application/json",
+    };
+
+    // Add API key if available
+    if (NVD_API_KEY) {
+      headers["apiKey"] = NVD_API_KEY;
+    }
 
     const response = await axios.get(NVD_API_BASE, {
       params,
-      headers: {
-        "Accept": "application/json",
-      },
+      headers,
       timeout: 15000, // 15 second timeout
     });
 
@@ -113,12 +123,20 @@ export async function searchCVEs(searchTerm: string): Promise<CVEItem[]> {
     };
 
     console.log(`Searching NVD for: ${searchTerm}`);
+    console.log(`Using API key: ${NVD_API_KEY ? 'Yes' : 'No (using public rate limit)'}`);
+
+    const headers: Record<string, string> = {
+      "Accept": "application/json",
+    };
+
+    // Add API key if available
+    if (NVD_API_KEY) {
+      headers["apiKey"] = NVD_API_KEY;
+    }
 
     const response = await axios.get(NVD_API_BASE, {
       params,
-      headers: {
-        "Accept": "application/json",
-      },
+      headers,
       timeout: 15000,
     });
 
