@@ -42,17 +42,17 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cyber-black/90 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cyber-black/80 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
       <div
-        className="cyber-border panel-bg-solid rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-cyber-dark/95 border border-cyber-blue/20 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         style={{
           animation: "modalSlideIn 0.3s ease-out",
         }}
       >
         {/* Header */}
-        <div className="sticky top-0 panel-bg-solid border-b border-cyber-blue/30 p-6 flex items-start justify-between z-10">
+        <div className="sticky top-0 bg-cyber-dark/95 border-b border-cyber-blue/20 p-6 flex items-start justify-between z-10">
           <div className="flex-1">
             <div className="flex items-center flex-wrap gap-3 mb-2">
               <h2 className="text-3xl font-bold text-cyber-text">
@@ -92,7 +92,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* CVSS Score */}
-          <div className="cyber-border bg-cyber-black/50 p-5 rounded-lg">
+          <div className="bg-cyber-black/30 p-5 rounded-lg border border-cyber-blue/10">
             <div className="flex items-center gap-2 mb-4">
               <Shield className="w-5 h-5 text-cyber-blue" />
               <h3 className="text-lg font-bold text-cyber-text">CVSS Score</h3>
@@ -124,7 +124,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
           </div>
 
           {/* Description */}
-          <div className="cyber-border bg-cyber-black/50 p-5 rounded-lg">
+          <div className="bg-cyber-black/30 p-5 rounded-lg border border-cyber-blue/10">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="w-5 h-5 text-cyber-pink" />
               <h3 className="text-lg font-bold text-cyber-text">Description</h3>
@@ -134,7 +134,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
 
           {/* Affected Products */}
           {cve.affectedProducts.length > 0 && (
-            <div className="cyber-border bg-cyber-black/50 p-4 rounded-lg">
+            <div className="bg-cyber-black/30 p-4 rounded-lg border border-cyber-blue/10">
               <div className="flex items-center gap-2 mb-3">
                 <Code className="w-5 h-5 text-cyber-purple" />
                 <h3 className="text-lg font-bold text-cyber-blue">Affected Products</h3>
@@ -143,7 +143,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
                 {cve.affectedProducts.map((product, i) => (
                   <div
                     key={i}
-                    className="px-3 py-2 bg-cyber-dark/50 border border-cyber-blue/20 rounded text-sm text-cyber-blue/70 font-mono"
+                    className="px-3 py-2 bg-cyber-dark/30 border border-cyber-blue/10 rounded text-sm text-cyber-blue/70 font-mono"
                   >
                     {product}
                   </div>
@@ -154,7 +154,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
 
           {/* Weaknesses */}
           {cve.weaknesses && cve.weaknesses.length > 0 && (
-            <div className="cyber-border bg-cyber-black/50 p-4 rounded-lg">
+            <div className="bg-cyber-black/30 p-4 rounded-lg border border-cyber-blue/10">
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="w-5 h-5 text-cyber-yellow" />
                 <h3 className="text-lg font-bold text-cyber-blue">Weaknesses (CWE)</h3>
@@ -163,7 +163,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
                 {cve.weaknesses.map((weakness, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 bg-cyber-yellow/10 border border-cyber-yellow/30 rounded text-sm text-cyber-yellow"
+                    className="px-3 py-1 bg-cyber-yellow/10 border border-cyber-yellow/20 rounded text-sm text-cyber-yellow"
                   >
                     {weakness}
                   </span>
@@ -173,7 +173,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
           )}
 
           {/* Timeline */}
-          <div className="cyber-border bg-cyber-black/50 p-4 rounded-lg">
+          <div className="bg-cyber-black/30 p-4 rounded-lg border border-cyber-blue/10">
             <div className="flex items-center gap-2 mb-3">
               <Calendar className="w-5 h-5 text-cyber-green" />
               <h3 className="text-lg font-bold text-cyber-blue">Timeline</h3>
@@ -196,7 +196,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
 
           {/* References */}
           {cve.references.length > 0 && (
-            <div className="cyber-border bg-cyber-black/50 p-4 rounded-lg">
+            <div className="bg-cyber-black/30 p-4 rounded-lg border border-cyber-blue/10">
               <div className="flex items-center gap-2 mb-3">
                 <ExternalLink className="w-5 h-5 text-cyber-blue" />
                 <h3 className="text-lg font-bold text-cyber-blue">References</h3>
@@ -208,9 +208,9 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
                     href={ref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 bg-cyber-dark/50 border border-cyber-blue/20 rounded text-sm text-cyber-blue hover:border-cyber-blue hover:text-shadow-glow transition-all group"
+                    className="flex items-center gap-2 px-3 py-2 bg-cyber-dark/30 border border-cyber-blue/10 rounded text-sm text-cyber-blue hover:border-cyber-blue/30 transition-all group"
                   >
-                    <ExternalLink className="w-4 h-4 group-hover:animate-pulse" />
+                    <ExternalLink className="w-4 h-4" />
                     <span className="truncate">{ref}</span>
                   </a>
                 ))}
@@ -220,7 +220,7 @@ export default function CVEDetailModal({ cve, onClose }: CVEDetailModalProps) {
 
           {/* Exploit Status */}
           {cve.exploitAvailable && (
-            <div className="cyber-border border-cyber-pink bg-cyber-pink/10 p-4 rounded-lg">
+            <div className="border-2 border-cyber-pink bg-cyber-pink/10 p-4 rounded-lg">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-cyber-pink animate-pulse" />
                 <span className="text-cyber-pink font-bold">
