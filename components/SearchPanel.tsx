@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Filter, Calendar } from "lucide-react";
+import { Search, Filter, Calendar, Database } from "lucide-react";
 import { FilterState } from "@/lib/types";
 
 interface SearchPanelProps {
@@ -35,8 +35,22 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
           }`}
         >
           <div className="flex flex-col gap-3">
-            {/* Severity and Date Range Row */}
+            {/* First Row: Data Source, Severity, Date Range */}
             <div className="flex flex-col sm:flex-row gap-3">
+              {/* Data Source Filter */}
+              <div className="relative flex-1">
+                <Database className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyber-green/50" />
+                <select
+                  value={filters.dataSource}
+                  onChange={(e) => setFilters({ ...filters, dataSource: e.target.value as any })}
+                  className="w-full bg-cyber-black/50 border border-cyber-green/30 rounded pl-9 pr-8 py-2 text-cyber-green text-sm focus:outline-none focus:border-cyber-green focus:border-glow transition-all appearance-none cursor-pointer"
+                >
+                  <option value="ALL">ALL SOURCES</option>
+                  <option value="NVD">NVD ONLY</option>
+                  <option value="EUVD">EUVD ONLY</option>
+                </select>
+              </div>
+
               {/* Severity Filter */}
               <div className="relative flex-1">
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyber-pink/50" />
@@ -69,8 +83,10 @@ export default function SearchPanel({ filters, setFilters }: SearchPanelProps) {
                   <option value="365">Last Year</option>
                 </select>
               </div>
+            </div>
 
-              {/* Hide Filters Button */}
+            {/* Second Row: Hide Filters Button */}
+            <div className="flex justify-end">
               <button
                 onClick={() => setIsExpanded(false)}
                 className="px-3 py-2 bg-cyber-dark border border-cyber-blue/30 rounded text-xs text-cyber-text hover:border-cyber-blue transition-all font-medium whitespace-nowrap"
