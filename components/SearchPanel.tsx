@@ -18,7 +18,7 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
   const hasExploits = exploitCount > 0;
 
   return (
-    <div className="cyber-border panel-bg p-3 rounded-lg mb-4">
+    <div className="border border-cyber-blue/30 panel-bg p-3 rounded-lg mb-4">
       <div className="flex flex-col gap-3">
         {/* Search Input */}
         <div className="flex-1 relative">
