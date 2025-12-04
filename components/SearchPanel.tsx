@@ -17,12 +17,21 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
   const exploitCount = availableCVEs.filter(cve => cve.exploitAvailable).length;
   const hasExploits = exploitCount > 0;
 
-  // Extract vendors from affected products
+  // Extract vendors from affected products (CPE format)
   const vendorCounts = availableCVEs.reduce((acc, cve) => {
     cve.affectedProducts.forEach(product => {
-      // Extract vendor name (typically the first part before space or underscore)
-      const vendor = product.split(/[\s_:]/)[0].toLowerCase();
-      if (vendor && vendor.length > 2) {
+      // CPE format: cpe:2.3:a:vendor:product:... or cpe:/a:vendor:product:...
+      const parts = product.split(':');
+      let vendor = '';
+
+      if (parts[0] === 'cpe' && parts.length > 3) {
+        // CPE 2.3 format: vendor is at index 3
+        // CPE 2.2 format: vendor is at index 2 (after cpe:/a)
+        vendor = parts[1] === '2.3' ? parts[3] : parts[2].split('/').pop() || '';
+      }
+
+      vendor = vendor.toLowerCase().trim();
+      if (vendor && vendor.length > 1 && vendor !== '*' && vendor !== '-') {
         acc[vendor] = (acc[vendor] || 0) + 1;
       }
     });
