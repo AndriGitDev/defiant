@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cyber-blue: #00f0ff;
+  --cyber-pink: #ff006e;
+  --cyber-purple: #8b5cf6;
+  --cyber-green: #00ff41;
+  --cyber-black: #0a0e27;
+  --cyber-dark: #1a1f3a;
+}
+
+@layer base {
+  * {
+    @apply border-cyber-blue/20;
+  }
+
+  body {
+    @apply bg-cyber-black text-cyber-blue;
+    font-family: 'Courier New', monospace;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .text-shadow-glow {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+
+  .border-glow {
+    box-shadow: 0 0 5px currentColor, inset 0 0 5px currentColor;
+  }
+
+  .cyber-border {
+    position: relative;
+    border: 1px solid var(--cyber-blue);
+  }
+
+  .cyber-border::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--cyber-blue), var(--cyber-pink), var(--cyber-purple));
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s;
+    filter: blur(10px);
+  }
+
+  .cyber-border:hover::before {
+    opacity: 0.7;
+  }
+
+  .glitch {
+    position: relative;
+  }
+
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 var(--cyber-pink);
+    clip: rect(24px, 550px, 90px, 0);
+    animation: glitch-anim 3s infinite linear alternate-reverse;
+  }
+
+  .glitch::after {
+    left: -2px;
+    text-shadow: -2px 0 var(--cyber-blue);
+    clip: rect(85px, 550px, 140px, 0);
+    animation: glitch-anim 2s infinite linear alternate-reverse;
+  }
+
+  @keyframes glitch-anim {
+    0% { clip: rect(31px, 9999px, 94px, 0); }
+    20% { clip: rect(60px, 9999px, 36px, 0); }
+    40% { clip: rect(100px, 9999px, 20px, 0); }
+    60% { clip: rect(41px, 9999px, 82px, 0); }
+    80% { clip: rect(10px, 9999px, 120px, 0); }
+    100% { clip: rect(73px, 9999px, 54px, 0); }
+  }
+
+  .scanline {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scanline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(transparent, var(--cyber-blue), transparent);
+    opacity: 0.3;
+    animation: scan 8s linear infinite;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+}
