@@ -1,15 +1,12 @@
 "use client";
 
-import { Shield, Activity, Database } from "lucide-react";
-import { FilterState } from "@/lib/types";
+import { Shield, Activity } from "lucide-react";
 
 interface HeaderProps {
   onResetFilters?: () => void;
-  filters?: FilterState;
-  setFilters?: (filters: FilterState) => void;
 }
 
-export default function Header({ onResetFilters, filters, setFilters }: HeaderProps) {
+export default function Header({ onResetFilters }: HeaderProps) {
   return (
     <header className="border-b border-cyber-blue/30 panel-bg-solid">
       <div className="container mx-auto px-4 py-3">
@@ -38,20 +35,9 @@ export default function Header({ onResetFilters, filters, setFilters }: HeaderPr
               <span className="text-cyber-green text-xs font-mono font-semibold">ONLINE</span>
             </div>
 
-            {filters && setFilters && (
-              <div className="hidden md:flex items-center gap-2 px-2 py-1.5 border border-cyber-green/30 bg-cyber-green/5 rounded">
-                <Database className="w-3.5 h-3.5 text-cyber-green/70" />
-                <select
-                  value={filters.dataSource}
-                  onChange={(e) => setFilters({ ...filters, dataSource: e.target.value as any })}
-                  className="bg-transparent border-none text-cyber-green text-xs font-mono focus:outline-none appearance-none cursor-pointer pr-1"
-                >
-                  <option value="ALL">ALL</option>
-                  <option value="NVD">NVD</option>
-                  <option value="EUVD">EUVD</option>
-                </select>
-              </div>
-            )}
+            <div className="hidden md:flex items-center gap-1 px-2 py-1 border border-cyber-blue/30 bg-cyber-blue/5 rounded">
+              <span className="text-cyber-blue text-xs font-mono">NVD + EUVD</span>
+            </div>
 
             <div className="text-xs text-cyber-text-dim hidden lg:block">
               Powered by{" "}
