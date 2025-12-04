@@ -1,13 +1,9 @@
 import axios from "axios";
 import { CVEItem } from "./types";
 
-const NVD_API_BASE = "https://services.nvd.nist.gov/rest/json/cves/2.0";
-const NVD_API_KEY = process.env.NEXT_PUBLIC_NVD_API_KEY || process.env.NVD_API_KEY;
-
-// Rate limiting: NVD requires 6 seconds between requests without API key
-// With API key: 50 requests per 30 seconds (much faster)
-let lastRequestTime = 0;
-const REQUEST_DELAY = NVD_API_KEY ? 600 : 6000; // 0.6s with key, 6s without
+// Use our Next.js API route instead of calling NVD directly
+// This keeps the API key secure on the server side
+const API_BASE = "/api/cves";
 
 // Helper function to calculate CVSS severity from score
 function getSeverity(score: number): CVEItem["severity"] {
@@ -18,57 +14,25 @@ function getSeverity(score: number): CVEItem["severity"] {
   return "NONE";
 }
 
-// Helper to enforce rate limiting
-async function waitForRateLimit() {
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
-  if (timeSinceLastRequest < REQUEST_DELAY) {
-    const waitTime = REQUEST_DELAY - timeSinceLastRequest;
-    console.log(`Rate limiting: waiting ${waitTime}ms before next request`);
-    await new Promise(resolve => setTimeout(resolve, waitTime));
-  }
-  lastRequestTime = Date.now();
-}
-
 export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
   try {
-    await waitForRateLimit();
+    console.log(`Fetching CVEs via API route for last ${days} days`);
 
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    // Use lastModDate to get recently modified CVEs (including new ones)
-    const params = {
-      lastModStartDate: startDate.toISOString(),
-      lastModEndDate: endDate.toISOString(),
-      resultsPerPage: 100,
-    };
-
-    console.log(`Fetching CVEs from NVD API with params:`, params);
-    console.log(`Using API key: ${NVD_API_KEY ? 'Yes' : 'No (using public rate limit)'}`);
-
-    const headers: Record<string, string> = {
-      "Accept": "application/json",
-    };
-
-    // Add API key if available
-    if (NVD_API_KEY) {
-      headers["apiKey"] = NVD_API_KEY;
-    }
-
-    const response = await axios.get(NVD_API_BASE, {
-      params,
-      headers,
-      timeout: 15000, // 15 second timeout
+    const response = await axios.get(`${API_BASE}?days=${days}`, {
+      timeout: 20000, // 20 second timeout (accounts for rate limiting)
     });
 
-    console.log(`NVD API response: ${response.data.vulnerabilities?.length || 0} CVEs found`);
+    if (!response.data.success) {
+      throw new Error(response.data.error || "API request failed");
+    }
 
-    const vulnerabilities = response.data.vulnerabilities || [];
+    console.log(`API route response: ${response.data.data.vulnerabilities?.length || 0} CVEs found`);
+    console.log(`Using API key: ${response.data.usingApiKey ? 'Yes ✓' : 'No (public rate limit)'}`);
+
+    const vulnerabilities = response.data.data.vulnerabilities || [];
 
     if (vulnerabilities.length === 0) {
-      console.warn("NVD API returned no vulnerabilities, using mock data");
+      console.warn("API returned no vulnerabilities, using mock data");
       return generateMockCVEs(20);
     }
 
@@ -98,13 +62,10 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
       };
     });
   } catch (error: any) {
-    console.error("Error fetching CVEs from NVD:", error.message || error);
+    console.error("Error fetching CVEs via API route:", error.message || error);
 
-    // Log more details for debugging
     if (error.response) {
-      console.error("NVD API error response:", error.response.status, error.response.statusText);
-    } else if (error.request) {
-      console.error("NVD API no response received");
+      console.error("API route error:", error.response.status, error.response.data);
     }
 
     // Return mock data for development/demo
@@ -115,33 +76,20 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
 
 export async function searchCVEs(searchTerm: string): Promise<CVEItem[]> {
   try {
-    await waitForRateLimit();
+    console.log(`Searching CVEs via API route for: ${searchTerm}`);
 
-    const params = {
-      keywordSearch: searchTerm,
-      resultsPerPage: 50,
-    };
-
-    console.log(`Searching NVD for: ${searchTerm}`);
-    console.log(`Using API key: ${NVD_API_KEY ? 'Yes' : 'No (using public rate limit)'}`);
-
-    const headers: Record<string, string> = {
-      "Accept": "application/json",
-    };
-
-    // Add API key if available
-    if (NVD_API_KEY) {
-      headers["apiKey"] = NVD_API_KEY;
-    }
-
-    const response = await axios.get(NVD_API_BASE, {
-      params,
-      headers,
-      timeout: 15000,
+    const response = await axios.get(`${API_BASE}?search=${encodeURIComponent(searchTerm)}`, {
+      timeout: 20000,
     });
 
-    const vulnerabilities = response.data.vulnerabilities || [];
+    if (!response.data.success) {
+      throw new Error(response.data.error || "API request failed");
+    }
+
+    const vulnerabilities = response.data.data.vulnerabilities || [];
     console.log(`Found ${vulnerabilities.length} CVEs matching search`);
+    console.log(`Using API key: ${response.data.usingApiKey ? 'Yes ✓' : 'No (public rate limit)'}`);
+
 
     return vulnerabilities.map((vuln: any) => {
       const cve = vuln.cve;
@@ -168,7 +116,7 @@ export async function searchCVEs(searchTerm: string): Promise<CVEItem[]> {
       };
     });
   } catch (error: any) {
-    console.error("Error searching CVEs:", error.message || error);
+    console.error("Error searching CVEs via API route:", error.message || error);
     return [];
   }
 }
