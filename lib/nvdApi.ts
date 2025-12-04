@@ -36,7 +36,7 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
       return generateMockCVEs(20);
     }
 
-    return vulnerabilities.map((vuln: any) => {
+    const mappedCVEs = vulnerabilities.map((vuln: any) => {
       const cve = vuln.cve;
       const metrics = cve.metrics?.cvssMetricV31?.[0] || cve.metrics?.cvssMetricV30?.[0] || cve.metrics?.cvssMetricV2?.[0];
       const score = metrics?.cvssData?.baseScore || 0;
@@ -60,6 +60,12 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
         vector: metrics?.cvssData?.vectorString,
         source: "NVD" as const,
       };
+    });
+
+    // Sort by published date (newest first) to show recent CVEs at the top
+    // This prevents old CVEs from 2015 that were recently modified from appearing first
+    return mappedCVEs.sort((a: CVEItem, b: CVEItem) => {
+      return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
     });
   } catch (error: any) {
     console.error("Error fetching CVEs via API route:", error.message || error);
@@ -91,7 +97,7 @@ export async function searchCVEs(searchTerm: string): Promise<CVEItem[]> {
     console.log(`Using API key: ${response.data.usingApiKey ? 'Yes ✓' : 'No (public rate limit)'}`);
 
 
-    return vulnerabilities.map((vuln: any) => {
+    const mappedCVEs = vulnerabilities.map((vuln: any) => {
       const cve = vuln.cve;
       const metrics = cve.metrics?.cvssMetricV31?.[0] || cve.metrics?.cvssMetricV30?.[0] || cve.metrics?.cvssMetricV2?.[0];
       const score = metrics?.cvssData?.baseScore || 0;
@@ -114,6 +120,11 @@ export async function searchCVEs(searchTerm: string): Promise<CVEItem[]> {
         vector: metrics?.cvssData?.vectorString,
         source: "NVD" as const,
       };
+    });
+
+    // Sort by published date (newest first)
+    return mappedCVEs.sort((a: CVEItem, b: CVEItem) => {
+      return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
     });
   } catch (error: any) {
     console.error("Error searching CVEs via API route:", error.message || error);

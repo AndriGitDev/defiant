@@ -35,12 +35,13 @@ export async function GET(request: NextRequest) {
     if (searchTerm) {
       // Search query
       params.keywordSearch = searchTerm;
-      params.resultsPerPage = 50;
+      params.resultsPerPage = 100;
     } else {
-      // Date range query
+      // Date range query - using lastModStartDate to catch recently updated CVEs
+      // (including new CVEs and old CVEs with recent modifications)
       params.lastModStartDate = startDate.toISOString();
       params.lastModEndDate = endDate.toISOString();
-      params.resultsPerPage = 100;
+      params.resultsPerPage = 2000; // Maximum allowed by NVD API
     }
 
     console.log(`[API Route] Fetching CVEs from NVD API with params:`, params);
