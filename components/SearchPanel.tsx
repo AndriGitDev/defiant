@@ -29,7 +29,7 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
             value={filters.searchTerm}
             onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
             onFocus={() => setIsExpanded(true)}
-            className="w-full bg-cyber-black/50 border border-cyber-blue/30 rounded pl-9 pr-3 py-2 text-cyber-text placeholder-cyber-text-dim/50 focus:outline-none focus:border-cyber-blue focus:border-glow transition-all text-sm"
+            className="w-full bg-cyber-black/50 border border-cyber-blue/30 rounded pl-9 pr-3 py-2 text-cyber-text placeholder-cyber-text-dim/50 focus:outline-none focus:border-cyber-blue transition-all text-sm"
           />
         </div>
 
@@ -48,7 +48,7 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
                 <select
                   value={filters.dataSource}
                   onChange={(e) => setFilters({ ...filters, dataSource: e.target.value as any })}
-                  className="w-full bg-cyber-black/50 border border-cyber-green/30 rounded pl-9 pr-8 py-2 text-cyber-green text-sm focus:outline-none focus:border-cyber-green focus:border-glow transition-all appearance-none cursor-pointer"
+                  className="w-full bg-cyber-black/50 border border-cyber-green/30 rounded pl-9 pr-8 py-2 text-cyber-green text-sm focus:outline-none focus:border-cyber-green transition-all appearance-none cursor-pointer"
                 >
                   <option value="ALL">ALL SOURCES</option>
                   <option value="NVD">NVD ONLY</option>
@@ -62,7 +62,7 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
                 <select
                   value={filters.severity}
                   onChange={(e) => setFilters({ ...filters, severity: e.target.value })}
-                  className="w-full bg-cyber-black/50 border border-cyber-pink/30 rounded pl-9 pr-8 py-2 text-cyber-pink text-sm focus:outline-none focus:border-cyber-pink focus:border-glow transition-all appearance-none cursor-pointer"
+                  className="w-full bg-cyber-black/50 border border-cyber-pink/30 rounded pl-9 pr-8 py-2 text-cyber-pink text-sm focus:outline-none focus:border-cyber-pink transition-all appearance-none cursor-pointer"
                 >
                   <option value="all">All Severities</option>
                   <option value="CRITICAL">Critical</option>
@@ -78,7 +78,7 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
                 <select
                   value={filters.dateRange}
                   onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
-                  className="w-full bg-cyber-black/50 border border-cyber-purple/30 rounded pl-9 pr-8 py-2 text-cyber-purple text-sm focus:outline-none focus:border-cyber-purple focus:border-glow transition-all appearance-none cursor-pointer"
+                  className="w-full bg-cyber-black/50 border border-cyber-purple/30 rounded pl-9 pr-8 py-2 text-cyber-purple text-sm focus:outline-none focus:border-cyber-purple transition-all appearance-none cursor-pointer"
                 >
                   <option value="1">Last 24 Hours</option>
                   <option value="3">Last 3 Days</option>
