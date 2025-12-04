@@ -36,11 +36,11 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
         {/* Collapsible Filters */}
         <div
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
           <div className="flex flex-col gap-3">
-            {/* First Row: Data Source, Severity, Date Range */}
+            {/* Filter Row */}
             <div className="flex flex-col sm:flex-row gap-3">
               {/* Data Source Filter */}
               <div className="relative flex-1">
@@ -90,7 +90,30 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
               </div>
             </div>
 
-            {/* Second Row: Hide Filters Button */}
+            {/* Quick Filters Tags */}
+            {availableCVEs.length > 0 && hasExploits && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-xs text-cyber-text-dim">Quick:</span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFilters({ ...filters, exploitAvailable: !filters.exploitAvailable });
+                  }}
+                  className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                    filters.exploitAvailable
+                      ? 'bg-red-500/30 border border-red-500/50 text-red-400'
+                      : 'bg-red-500/10 border border-red-500/30 text-red-500/70 hover:bg-red-500/20 hover:border-red-500/40'
+                  }`}
+                >
+                  <span className="flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Exploits ({exploitCount})
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Hide Filters Button */}
             <div className="flex justify-end">
               <button
                 onClick={() => setIsExpanded(false)}
@@ -132,30 +155,6 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
           >
             Clear Filters
           </button>
-        </div>
-      )}
-
-      {/* Available Filter Tags */}
-      {availableCVEs.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-cyber-blue/20">
-          <p className="text-xs text-cyber-text-dim mb-2">Quick Filters:</p>
-          <div className="flex flex-wrap gap-2">
-            {hasExploits && (
-              <button
-                onClick={() => setFilters({ ...filters, exploitAvailable: !filters.exploitAvailable })}
-                className={`px-2 py-1 rounded text-xs font-medium transition-all ${
-                  filters.exploitAvailable
-                    ? 'bg-red-500/30 border border-red-500/50 text-red-400'
-                    : 'bg-red-500/10 border border-red-500/30 text-red-500/70 hover:bg-red-500/20 hover:border-red-500/40'
-                }`}
-              >
-                <span className="flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
-                  Exploits ({exploitCount})
-                </span>
-              </button>
-            )}
-          </div>
         </div>
       )}
     </div>
