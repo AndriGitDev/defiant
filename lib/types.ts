@@ -34,6 +34,7 @@ export interface FilterState {
   searchTerm: string;
   dataSource: DataSource;
   exploitAvailable?: boolean;
+  vendor?: string;
 }
 
 export interface Stats {
