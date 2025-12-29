@@ -13,8 +13,8 @@ function getSeverity(score: number): CVEItem["severity"] {
   return "NONE";
 }
 
-// Map EUVD response to our CVEItem format
-function mapEUVDToCVEItem(vuln: any): CVEItem | null {
+// Map EUVD response to our CVEItem format (exported for use in API routes)
+export function mapEUVDToCVEItem(vuln: any): CVEItem | null {
   if (!vuln || typeof vuln !== 'object') {
     return null;
   }
@@ -89,8 +89,8 @@ function mapEUVDToCVEItem(vuln: any): CVEItem | null {
   };
 }
 
-// Extract vulnerabilities from various response formats
-function extractVulnerabilities(data: any): any[] {
+// Extract vulnerabilities from various response formats (exported for use in API routes)
+export function extractVulnerabilities(data: any): any[] {
   if (!data) return [];
 
   // Direct array
