@@ -95,16 +95,35 @@ export async function searchEUVDCVEs(searchTerm: string): Promise<CVEItem[]> {
   try {
     console.log(`Searching EUVD CVEs for: ${searchTerm}`);
 
-    const response = await axios.get(`${API_BASE}?endpoint=search&search=${encodeURIComponent(searchTerm)}`, {
-      timeout: 15000,
-    });
+    // Check if it's an EUVD ID (e.g., EUVD-2025-200983)
+    const isEUVDId = /^EUVD-\d{4}-\d+$/i.test(searchTerm.trim());
+
+    let response;
+    if (isEUVDId) {
+      // Direct EUVD ID lookup
+      response = await axios.get(`${API_BASE}?endpoint=enisaid&cveId=${encodeURIComponent(searchTerm.trim().toUpperCase())}`, {
+        timeout: 15000,
+      });
+    } else {
+      // Text search
+      response = await axios.get(`${API_BASE}?endpoint=search&search=${encodeURIComponent(searchTerm)}`, {
+        timeout: 15000,
+      });
+    }
 
     if (!response.data.success) {
       throw new Error(response.data.error || "EUVD API request failed");
     }
 
     const data = response.data.data;
-    const vulns = Array.isArray(data) ? data : (data.items || data.content || []);
+
+    // Handle single result (from enisaid) or array (from search)
+    let vulns: any[];
+    if (isEUVDId && data && !Array.isArray(data)) {
+      vulns = [data]; // Single result from enisaid endpoint
+    } else {
+      vulns = Array.isArray(data) ? data : (data.items || data.content || []);
+    }
 
     const mappedCVEs = vulns.map(mapEUVDToCVEItem);
 
