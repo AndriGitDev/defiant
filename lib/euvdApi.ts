@@ -23,9 +23,18 @@ function mapEUVDToCVEItem(vuln: any): CVEItem | null {
   const score = vuln.baseScore || vuln.cvssScore || vuln.cvss?.baseScore || vuln.score || 0;
 
   // Get the ID - could be EUVD ID or CVE ID
-  // EUVD API returns: id (EUVD ID), aliases (array with CVE IDs)
+  // EUVD API returns: id (EUVD ID), aliases (could be array or string with CVE IDs)
   const euvdId = vuln.euvdId || vuln.id || "";
-  const cveId = vuln.aliases?.find((a: string) => a?.startsWith?.("CVE-"))
+
+  // Handle aliases - could be array, string, or undefined
+  let cveIdFromAliases = "";
+  if (Array.isArray(vuln.aliases)) {
+    cveIdFromAliases = vuln.aliases.find((a: string) => typeof a === 'string' && a.startsWith("CVE-")) || "";
+  } else if (typeof vuln.aliases === 'string' && vuln.aliases.startsWith("CVE-")) {
+    cveIdFromAliases = vuln.aliases;
+  }
+
+  const cveId = cveIdFromAliases
     || vuln.cveId
     || (typeof euvdId === 'string' && euvdId.startsWith("CVE-") ? euvdId : "");
 
@@ -37,6 +46,32 @@ function mapEUVDToCVEItem(vuln: any): CVEItem | null {
     return null;
   }
 
+  // Safely extract references
+  let references: string[] = [];
+  if (Array.isArray(vuln.references)) {
+    references = vuln.references.map((ref: any) => typeof ref === "string" ? ref : ref?.url).filter(Boolean);
+  } else if (typeof vuln.references === 'string') {
+    references = [vuln.references];
+  }
+
+  // Safely extract affected products
+  let affectedProducts: string[] = [];
+  if (Array.isArray(vuln.products)) {
+    affectedProducts = vuln.products.map((p: any) =>
+      typeof p === "string" ? p : `cpe:2.3:a:${p?.vendor || "unknown"}:${p?.product || "unknown"}:*:*:*:*:*:*:*:*`
+    );
+  } else if (Array.isArray(vuln.affectedProducts)) {
+    affectedProducts = vuln.affectedProducts;
+  }
+
+  // Safely extract weaknesses
+  let weaknesses: string[] = [];
+  if (Array.isArray(vuln.cwe)) {
+    weaknesses = vuln.cwe;
+  } else if (typeof vuln.cwe === 'string') {
+    weaknesses = [vuln.cwe];
+  }
+
   return {
     id: `euvd-${euvdId || cveId || Math.random().toString(36)}`,
     cveId: displayId,
@@ -45,11 +80,9 @@ function mapEUVDToCVEItem(vuln: any): CVEItem | null {
     score: score,
     publishedDate: vuln.datePublished || vuln.published || vuln.publishedDate || vuln.created || new Date().toISOString(),
     lastModifiedDate: vuln.dateUpdated || vuln.lastModified || vuln.modifiedDate || vuln.updated || new Date().toISOString(),
-    references: vuln.references?.map((ref: any) => typeof ref === "string" ? ref : ref.url).filter(Boolean) || [],
-    affectedProducts: vuln.products?.map((p: any) =>
-      typeof p === "string" ? p : `cpe:2.3:a:${p.vendor || "unknown"}:${p.product || "unknown"}:*:*:*:*:*:*:*:*`
-    ) || vuln.affectedProducts || [],
-    weaknesses: vuln.cwe ? (Array.isArray(vuln.cwe) ? vuln.cwe : [vuln.cwe]) : [],
+    references,
+    affectedProducts,
+    weaknesses,
     exploitAvailable: vuln.exploited === true || vuln.isExploited === true || vuln.knownExploited === true,
     vector: vuln.cvssVector || vuln.vectorString || vuln.cvss?.vectorString,
     source: "EUVD" as const,
