@@ -12,7 +12,10 @@ import {
 import { mapEUVDToCVEItem, extractVulnerabilities } from "@/lib/euvdApi";
 
 const EUVD_API_BASE = "https://euvdservices.enisa.europa.eu/api";
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL
+  || process.env.POSTGRES_URL
+  || process.env.POSTGRES_PRISMA_URL
+  || process.env.POSTGRES_URL_NON_POOLING;
 
 // Rate limiting for EUVD API
 let lastRequestTime = 0;
