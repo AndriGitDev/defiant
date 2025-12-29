@@ -14,6 +14,40 @@ function getSeverity(score: number): CVEItem["severity"] {
   return "NONE";
 }
 
+// Map raw NVD vulnerability to CVEItem (exported for use in API routes)
+export function mapNVDToCVEItem(vuln: any): CVEItem | null {
+  try {
+    const cve = vuln.cve;
+    const metrics = cve.metrics?.cvssMetricV31?.[0] || cve.metrics?.cvssMetricV30?.[0] || cve.metrics?.cvssMetricV2?.[0];
+    const score = metrics?.cvssData?.baseScore || 0;
+
+    return {
+      id: cve.id,
+      cveId: cve.id,
+      description: cve.descriptions?.find((d: any) => d.lang === "en")?.value || "No description available",
+      severity: getSeverity(score),
+      score: score,
+      publishedDate: cve.published,
+      lastModifiedDate: cve.lastModified,
+      references: cve.references?.map((ref: any) => ref.url) || [],
+      affectedProducts: cve.configurations?.flatMap((config: any) =>
+        config.nodes?.flatMap((node: any) =>
+          node.cpeMatch?.map((match: any) => match.criteria) || []
+        ) || []
+      ) || [],
+      weaknesses: cve.weaknesses?.flatMap((w: any) =>
+        w.description?.map((d: any) => d.value) || []
+      ) || [],
+      exploitAvailable: false,
+      vector: metrics?.cvssData?.vectorString,
+      source: "NVD" as const,
+    };
+  } catch (error) {
+    console.error("Error mapping NVD CVE:", error);
+    return null;
+  }
+}
+
 export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
   try {
     console.log(`Fetching CVEs via API route for last ${days} days`);

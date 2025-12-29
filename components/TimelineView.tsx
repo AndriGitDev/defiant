@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { CVEItem, FilterState } from "@/lib/types";
 import { fetchCVEsFromAllSources, searchCVEs } from "@/lib/vulnerabilityApi";
-import { Loader2, Database, Search } from "lucide-react";
+import { Loader2, Database, Search, Zap } from "lucide-react";
+import axios from "axios";
 
 interface TimelineViewProps {
   filters: FilterState;
@@ -50,20 +51,51 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
     loadCVEs();
   }, [filters.dateRange, filters.dataSource, onCVEsLoad]);
 
-  // Search API when CVE ID or EUVD ID is entered
+  // Search API when CVE ID, EUVD ID, or keyword is entered
   useEffect(() => {
     async function searchForCVE() {
-      if (!isIdSearch || !debouncedSearchTerm.trim()) {
+      const searchTerm = debouncedSearchTerm.trim();
+      if (!searchTerm || searchTerm.length < 2) {
         setSearchResults(null);
         return;
       }
 
       setSearching(true);
       try {
-        // For EUVD IDs, force search against EUVD source
-        const source = isEUVDIdSearch ? "EUVD" : filters.dataSource;
-        const results = await searchCVEs(debouncedSearchTerm.trim(), source);
-        setSearchResults(results);
+        // For CVE/EUVD IDs, use the standard search APIs
+        if (isIdSearch) {
+          const source = isEUVDIdSearch ? "EUVD" : filters.dataSource;
+          const results = await searchCVEs(searchTerm, source);
+          setSearchResults(results);
+        } else {
+          // For keyword searches, try database search first for faster results
+          try {
+            const dbResponse = await axios.get("/api/search", {
+              params: {
+                q: searchTerm,
+                source: filters.dataSource,
+                severity: filters.severity !== "all" ? filters.severity : undefined,
+                days: filters.dateRange,
+                limit: 50,
+              },
+              timeout: 5000,
+            });
+
+            if (dbResponse.data.success && dbResponse.data.data.results.length > 0) {
+              console.log(`Database search found ${dbResponse.data.data.results.length} results`);
+              setSearchResults(dbResponse.data.data.results);
+              setSearching(false);
+              return;
+            }
+          } catch (dbError) {
+            // Database search failed, fall through to standard search
+            console.log("Database search unavailable, using standard search");
+          }
+
+          // Fallback to standard API search
+          const results = await searchCVEs(searchTerm, filters.dataSource);
+          setSearchResults(results);
+        }
       } catch (error) {
         console.error("Search error:", error);
         setSearchResults([]);
@@ -72,7 +104,7 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
     }
 
     searchForCVE();
-  }, [debouncedSearchTerm, isIdSearch, isEUVDIdSearch, filters.dataSource]);
+  }, [debouncedSearchTerm, isIdSearch, isEUVDIdSearch, filters.dataSource, filters.severity, filters.dateRange]);
 
   // Use search results if we have them (CVE ID search), otherwise filter local CVEs
   const baseCVEs = searchResults !== null ? searchResults : cves;
