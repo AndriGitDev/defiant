@@ -14,19 +14,28 @@ function getSeverity(score: number): CVEItem["severity"] {
 }
 
 // Map EUVD response to our CVEItem format
-function mapEUVDToCVEItem(vuln: any): CVEItem {
+function mapEUVDToCVEItem(vuln: any): CVEItem | null {
+  if (!vuln || typeof vuln !== 'object') {
+    return null;
+  }
+
   // EUVD uses different field names - handle various response formats
-  const score = vuln.baseScore || vuln.cvssScore || vuln.cvss?.baseScore || 0;
+  const score = vuln.baseScore || vuln.cvssScore || vuln.cvss?.baseScore || vuln.score || 0;
 
   // Get the ID - could be EUVD ID or CVE ID
-  // EUVD API might return: id, euvdId, aliases (array with CVE IDs)
+  // EUVD API returns: id (EUVD ID), aliases (array with CVE IDs)
   const euvdId = vuln.euvdId || vuln.id || "";
   const cveId = vuln.aliases?.find((a: string) => a?.startsWith?.("CVE-"))
     || vuln.cveId
-    || (euvdId.startsWith("CVE-") ? euvdId : "");
+    || (typeof euvdId === 'string' && euvdId.startsWith("CVE-") ? euvdId : "");
 
   // Use EUVD ID as display ID if no CVE ID available
   const displayId = cveId || euvdId;
+
+  // Skip entries without any identifier
+  if (!displayId) {
+    return null;
+  }
 
   return {
     id: `euvd-${euvdId || cveId || Math.random().toString(36)}`,
@@ -34,9 +43,9 @@ function mapEUVDToCVEItem(vuln: any): CVEItem {
     description: vuln.description || vuln.summary || vuln.title || "No description available",
     severity: getSeverity(score),
     score: score,
-    publishedDate: vuln.datePublished || vuln.published || vuln.publishedDate || new Date().toISOString(),
-    lastModifiedDate: vuln.dateUpdated || vuln.lastModified || vuln.modifiedDate || new Date().toISOString(),
-    references: vuln.references?.map((ref: any) => typeof ref === "string" ? ref : ref.url) || [],
+    publishedDate: vuln.datePublished || vuln.published || vuln.publishedDate || vuln.created || new Date().toISOString(),
+    lastModifiedDate: vuln.dateUpdated || vuln.lastModified || vuln.modifiedDate || vuln.updated || new Date().toISOString(),
+    references: vuln.references?.map((ref: any) => typeof ref === "string" ? ref : ref.url).filter(Boolean) || [],
     affectedProducts: vuln.products?.map((p: any) =>
       typeof p === "string" ? p : `cpe:2.3:a:${p.vendor || "unknown"}:${p.product || "unknown"}:*:*:*:*:*:*:*:*`
     ) || vuln.affectedProducts || [],
@@ -47,28 +56,72 @@ function mapEUVDToCVEItem(vuln: any): CVEItem {
   };
 }
 
+// Extract vulnerabilities from various response formats
+function extractVulnerabilities(data: any): any[] {
+  if (!data) return [];
+
+  // Direct array
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  // Paginated response with items/content array
+  if (data.items && Array.isArray(data.items)) {
+    return data.items;
+  }
+  if (data.content && Array.isArray(data.content)) {
+    return data.content;
+  }
+  if (data.vulnerabilities && Array.isArray(data.vulnerabilities)) {
+    return data.vulnerabilities;
+  }
+  if (data.results && Array.isArray(data.results)) {
+    return data.results;
+  }
+
+  // Single object result (wrap in array)
+  if (data.id || data.euvdId) {
+    return [data];
+  }
+
+  return [];
+}
+
 export async function fetchEUVDCVEs(days: number = 90): Promise<CVEItem[]> {
   try {
     console.log(`Fetching EUVD CVEs for last ${days} days`);
 
     // Fetch from multiple endpoints in parallel for comprehensive data
-    const [latestRes, criticalRes, exploitedRes, searchRes] = await Promise.allSettled([
-      axios.get(`${API_BASE}?endpoint=lastvulnerabilities`, { timeout: 15000 }),
-      axios.get(`${API_BASE}?endpoint=criticalvulnerabilities`, { timeout: 15000 }),
-      axios.get(`${API_BASE}?endpoint=exploitedvulnerabilities`, { timeout: 15000 }),
-      axios.get(`${API_BASE}?endpoint=search&days=${days}`, { timeout: 15000 }),
-    ]);
+    const endpoints = [
+      `${API_BASE}?endpoint=lastvulnerabilities`,
+      `${API_BASE}?endpoint=criticalvulnerabilities`,
+      `${API_BASE}?endpoint=exploitedvulnerabilities`,
+      `${API_BASE}?endpoint=search&days=${days}`,
+    ];
+
+    const results = await Promise.allSettled(
+      endpoints.map(url => axios.get(url, { timeout: 15000 }))
+    );
 
     const allVulns: any[] = [];
 
     // Process each response
-    [latestRes, criticalRes, exploitedRes, searchRes].forEach((result, index) => {
-      if (result.status === "fulfilled" && result.value.data.success) {
-        const data = result.value.data.data;
-        const vulns = Array.isArray(data) ? data : (data.items || data.content || []);
-        allVulns.push(...vulns);
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        const responseData = result.value.data;
+        if (responseData.success) {
+          const vulns = extractVulnerabilities(responseData.data);
+          console.log(`EUVD endpoint ${index}: ${vulns.length} vulnerabilities`);
+          allVulns.push(...vulns);
+        } else {
+          console.warn(`EUVD endpoint ${index} failed:`, responseData.error);
+        }
+      } else {
+        console.warn(`EUVD endpoint ${index} rejected:`, result.reason?.message);
       }
     });
+
+    console.log(`EUVD: Total raw vulnerabilities: ${allVulns.length}`);
 
     if (allVulns.length === 0) {
       console.warn("EUVD API returned no vulnerabilities");
@@ -81,19 +134,24 @@ export async function fetchEUVDCVEs(days: number = 90): Promise<CVEItem[]> {
 
     for (const vuln of allVulns) {
       const mapped = mapEUVDToCVEItem(vuln);
-      const uniqueKey = mapped.cveId || mapped.id;
-      if (uniqueKey && !seen.has(uniqueKey)) {
-        seen.add(uniqueKey);
-        mappedCVEs.push(mapped);
+      if (mapped) {
+        const uniqueKey = mapped.cveId || mapped.id;
+        if (uniqueKey && !seen.has(uniqueKey)) {
+          seen.add(uniqueKey);
+          mappedCVEs.push(mapped);
+        }
       }
     }
 
     console.log(`EUVD: Mapped ${mappedCVEs.length} unique CVEs`);
 
-    // Sort by published date (newest first)
-    return mappedCVEs.sort((a, b) =>
-      new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
-    );
+    // Sort by severity first, then by date
+    const severityOrder: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, NONE: 4 };
+    return mappedCVEs.sort((a, b) => {
+      const severityDiff = (severityOrder[a.severity] || 4) - (severityOrder[b.severity] || 4);
+      if (severityDiff !== 0) return severityDiff;
+      return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+    });
 
   } catch (error: any) {
     console.error("Error fetching EUVD CVEs:", error.message || error);
@@ -108,40 +166,38 @@ export async function searchEUVDCVEs(searchTerm: string): Promise<CVEItem[]> {
     // Check if it's an EUVD ID (e.g., EUVD-2025-200983)
     const isEUVDId = /^EUVD-\d{4}-\d+$/i.test(searchTerm.trim());
 
-    let response;
+    let url;
     if (isEUVDId) {
       // Direct EUVD ID lookup
-      response = await axios.get(`${API_BASE}?endpoint=enisaid&cveId=${encodeURIComponent(searchTerm.trim().toUpperCase())}`, {
-        timeout: 15000,
-      });
+      url = `${API_BASE}?endpoint=enisaid&cveId=${encodeURIComponent(searchTerm.trim().toUpperCase())}`;
     } else {
       // Text search
-      response = await axios.get(`${API_BASE}?endpoint=search&search=${encodeURIComponent(searchTerm)}`, {
-        timeout: 15000,
-      });
+      url = `${API_BASE}?endpoint=search&search=${encodeURIComponent(searchTerm)}`;
     }
+
+    const response = await axios.get(url, { timeout: 15000 });
 
     if (!response.data.success) {
-      throw new Error(response.data.error || "EUVD API request failed");
+      console.error("EUVD search failed:", response.data.error);
+      return [];
     }
 
-    const data = response.data.data;
+    const vulns = extractVulnerabilities(response.data.data);
+    console.log(`EUVD search raw results: ${vulns.length}`);
 
-    // Handle single result (from enisaid) or array (from search)
-    let vulns: any[];
-    if (isEUVDId && data && !Array.isArray(data)) {
-      vulns = [data]; // Single result from enisaid endpoint
-    } else {
-      vulns = Array.isArray(data) ? data : (data.items || data.content || []);
-    }
-
-    const mappedCVEs = vulns.map(mapEUVDToCVEItem);
+    const mappedCVEs = vulns
+      .map(mapEUVDToCVEItem)
+      .filter((cve): cve is CVEItem => cve !== null);
 
     console.log(`EUVD search: Found ${mappedCVEs.length} CVEs`);
 
-    return mappedCVEs.sort((a: CVEItem, b: CVEItem) =>
-      new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
-    );
+    // Sort by severity first, then by date
+    const severityOrder: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, NONE: 4 };
+    return mappedCVEs.sort((a, b) => {
+      const severityDiff = (severityOrder[a.severity] || 4) - (severityOrder[b.severity] || 4);
+      if (severityDiff !== 0) return severityDiff;
+      return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+    });
 
   } catch (error: any) {
     console.error("Error searching EUVD CVEs:", error.message || error);
