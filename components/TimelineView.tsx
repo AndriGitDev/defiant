@@ -31,8 +31,10 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(filters.searchTerm, 500);
 
-  // Check if search term looks like a CVE ID
+  // Check if search term looks like a CVE ID or EUVD ID
   const isCVEIdSearch = /^CVE-\d{4}-\d+$/i.test(debouncedSearchTerm.trim());
+  const isEUVDIdSearch = /^EUVD-\d{4}-\d+$/i.test(debouncedSearchTerm.trim());
+  const isIdSearch = isCVEIdSearch || isEUVDIdSearch;
 
   // Load CVEs based on date range
   useEffect(() => {
@@ -48,17 +50,19 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
     loadCVEs();
   }, [filters.dateRange, filters.dataSource, onCVEsLoad]);
 
-  // Search API when CVE ID is entered
+  // Search API when CVE ID or EUVD ID is entered
   useEffect(() => {
     async function searchForCVE() {
-      if (!isCVEIdSearch || !debouncedSearchTerm.trim()) {
+      if (!isIdSearch || !debouncedSearchTerm.trim()) {
         setSearchResults(null);
         return;
       }
 
       setSearching(true);
       try {
-        const results = await searchCVEs(debouncedSearchTerm.trim(), filters.dataSource);
+        // For EUVD IDs, force search against EUVD source
+        const source = isEUVDIdSearch ? "EUVD" : filters.dataSource;
+        const results = await searchCVEs(debouncedSearchTerm.trim(), source);
         setSearchResults(results);
       } catch (error) {
         console.error("Search error:", error);
@@ -68,10 +72,19 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
     }
 
     searchForCVE();
-  }, [debouncedSearchTerm, isCVEIdSearch, filters.dataSource]);
+  }, [debouncedSearchTerm, isIdSearch, isEUVDIdSearch, filters.dataSource]);
 
   // Use search results if we have them (CVE ID search), otherwise filter local CVEs
   const baseCVEs = searchResults !== null ? searchResults : cves;
+
+  // Severity order for sorting (most severe first)
+  const severityOrder: Record<string, number> = {
+    "CRITICAL": 0,
+    "HIGH": 1,
+    "MEDIUM": 2,
+    "LOW": 3,
+    "NONE": 4,
+  };
 
   // Filter CVEs based on search, severity, exploit availability, and vendor
   const filteredCVEs = baseCVEs.filter((cve) => {
@@ -91,7 +104,14 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
     );
 
     return matchesSeverity && matchesSearch && matchesExploit && matchesVendor;
-  }).slice(0, 50); // Limit to 50 results to prevent page from breaking
+  })
+  .sort((a, b) => {
+    // Sort by severity first (most critical first), then by date (newest first)
+    const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
+    if (severityDiff !== 0) return severityDiff;
+    return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+  })
+  .slice(0, 50); // Limit to 50 results to prevent page from breaking
 
   // Get severity color
   const getSeverityColor = (severity: string) => {
