@@ -26,7 +26,7 @@ export default function StatsPanel({ filters, onSeverityFilter, onStatsUpdate }:
 
   useEffect(() => {
     async function loadStats() {
-      const cves = await fetchCVEsFromAllSources(30, "ALL");
+      const cves = await fetchCVEsFromAllSources(90, "ALL");
       const newStats = getCVEStats(cves);
       setStats(newStats);
       onStatsUpdate?.(newStats);
@@ -39,7 +39,7 @@ export default function StatsPanel({ filters, onSeverityFilter, onStatsUpdate }:
   const statCards = [
     {
       icon: Database,
-      label: "Total CVEs (30 days)",
+      label: "Total CVEs (90 days)",
       value: stats.totalCVEs,
       color: "text-cyber-blue",
       bgColor: "bg-cyber-blue/10",

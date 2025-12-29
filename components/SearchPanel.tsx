@@ -205,7 +205,7 @@ export default function SearchPanel({ filters, setFilters, availableCVEs = [] }:
             </span>
           )}
           <button
-            onClick={() => setFilters({ severity: "all", dateRange: "30", searchTerm: "", dataSource: "ALL" })}
+            onClick={() => setFilters({ severity: "all", dateRange: "90", searchTerm: "", dataSource: "ALL" })}
             className="px-3 py-1.5 bg-cyber-dark border border-cyber-blue/30 rounded text-sm text-cyber-text hover:border-cyber-blue transition-all font-medium"
           >
             Clear Filters
