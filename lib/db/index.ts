@@ -5,7 +5,11 @@ import { cves, cacheMetadata, type CVERecord, type NewCVERecord } from "./schema
 import type { CVEItem, DataSource } from "../types";
 
 // Initialize Neon database connection
-const DATABASE_URL = process.env.DATABASE_URL;
+// Vercel/Neon may use different variable names
+const DATABASE_URL = process.env.DATABASE_URL
+  || process.env.POSTGRES_URL
+  || process.env.POSTGRES_PRISMA_URL
+  || process.env.POSTGRES_URL_NON_POOLING;
 
 function getDb() {
   if (!DATABASE_URL) {
