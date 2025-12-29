@@ -183,8 +183,18 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
       {filteredCVEs.length === 0 && (
         <div className="text-center py-20 panel-bg rounded-lg">
           <Database className="w-16 h-16 text-cyber-text-dim mx-auto mb-4 opacity-50" />
-          <p className="text-cyber-text-dim text-lg">No vulnerabilities match your filters</p>
-          <p className="text-cyber-text-dim/70 text-sm mt-2">Try adjusting your search criteria</p>
+          <p className="text-cyber-text-dim text-lg">
+            {cves.length === 0
+              ? "Unable to load CVE data from NVD API"
+              : "No vulnerabilities match your filters"
+            }
+          </p>
+          <p className="text-cyber-text-dim/70 text-sm mt-2">
+            {cves.length === 0
+              ? "Configure NVD_API_KEY environment variable for reliable access to CVE data"
+              : "Try adjusting your search criteria"
+            }
+          </p>
         </div>
       )}
 

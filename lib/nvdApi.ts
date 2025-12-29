@@ -32,8 +32,8 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
     const vulnerabilities = response.data.data.vulnerabilities || [];
 
     if (vulnerabilities.length === 0) {
-      console.warn("API returned no vulnerabilities, using mock data");
-      return generateMockCVEs(20);
+      console.warn("NVD API returned no vulnerabilities for the specified date range");
+      return [];
     }
 
     const mappedCVEs = vulnerabilities.map((vuln: any) => {
@@ -74,9 +74,8 @@ export async function fetchRecentCVEs(days: number = 30): Promise<CVEItem[]> {
       console.error("API route error:", error.response.status, error.response.data);
     }
 
-    // Return mock data for development/demo
-    console.log("Falling back to mock data");
-    return generateMockCVEs(20);
+    // Return empty array - no mock data fallback
+    return [];
   }
 }
 
@@ -132,83 +131,3 @@ export async function searchCVEs(searchTerm: string): Promise<CVEItem[]> {
   }
 }
 
-// Mock data generator for development - Updated with 2025 CVEs
-function generateMockCVEs(count: number): CVEItem[] {
-  const severities: CVEItem["severity"][] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
-  const vendors = ["Apache", "Microsoft", "Linux", "Cisco", "Oracle", "Adobe", "Google", "Apple", "VMware", "IBM"];
-  const products = ["Server", "Windows", "Kernel", "Router", "Database", "Reader", "Chrome", "iOS", "ESXi", "WebSphere"];
-
-  // Real recent CVE patterns for 2025
-  const recentCVEs = [
-    { id: "CVE-2025-55182", vendor: "Microsoft", product: "Windows", severity: "HIGH", score: 7.8 },
-    { id: "CVE-2025-21333", vendor: "Microsoft", product: "Windows", severity: "CRITICAL", score: 9.8 },
-    { id: "CVE-2025-21334", vendor: "Microsoft", product: "Office", severity: "HIGH", score: 8.1 },
-    { id: "CVE-2025-0282", vendor: "Google", product: "Chrome", severity: "HIGH", score: 8.8 },
-    { id: "CVE-2025-0283", vendor: "Google", product: "Chrome", severity: "CRITICAL", score: 9.6 },
-  ];
-
-  const mockCVEs: CVEItem[] = [];
-  const currentYear = new Date().getFullYear();
-
-  // Add recent real CVE patterns first
-  recentCVEs.forEach((cveData) => {
-    const date = new Date();
-    date.setDate(date.getDate() - Math.floor(Math.random() * 7)); // Last 7 days
-
-    mockCVEs.push({
-      id: cveData.id,
-      cveId: cveData.id,
-      description: `${cveData.severity} severity vulnerability in ${cveData.vendor} ${cveData.product}. This vulnerability could allow remote code execution through specially crafted requests.`,
-      severity: cveData.severity as CVEItem["severity"],
-      score: cveData.score,
-      publishedDate: date.toISOString(),
-      lastModifiedDate: date.toISOString(),
-      references: [
-        `https://nvd.nist.gov/vuln/detail/${cveData.id}`,
-        `https://cve.mitre.org/cgi-bin/cvename.cgi?name=${cveData.id}`,
-      ],
-      affectedProducts: [`cpe:2.3:a:${cveData.vendor.toLowerCase()}:${cveData.product.toLowerCase()}:*:*:*:*:*:*:*:*`],
-      weaknesses: ["CWE-79", "CWE-787", "CWE-20"],
-      exploitAvailable: Math.random() > 0.6,
-      vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
-      source: "NVD" as const,
-    });
-  });
-
-  // Generate additional mock CVEs
-  for (let i = 0; i < count - recentCVEs.length; i++) {
-    const severity = severities[Math.floor(Math.random() * severities.length)];
-    const vendor = vendors[Math.floor(Math.random() * vendors.length)];
-    const product = products[Math.floor(Math.random() * products.length)];
-    const date = new Date();
-    date.setDate(date.getDate() - Math.floor(Math.random() * 30));
-
-    const score = severity === "CRITICAL" ? 9 + Math.random()
-      : severity === "HIGH" ? 7 + Math.random() * 2
-      : severity === "MEDIUM" ? 4 + Math.random() * 3
-      : Math.random() * 4;
-
-    const cveId = `CVE-${currentYear}-${String(50000 + i).padStart(5, '0')}`;
-
-    mockCVEs.push({
-      id: cveId,
-      cveId: cveId,
-      description: `${severity} severity vulnerability in ${vendor} ${product}. This vulnerability could allow remote code execution through specially crafted requests.`,
-      severity,
-      score: parseFloat(score.toFixed(1)),
-      publishedDate: date.toISOString(),
-      lastModifiedDate: date.toISOString(),
-      references: [
-        `https://nvd.nist.gov/vuln/detail/${cveId}`,
-        `https://cve.mitre.org/cgi-bin/cvename.cgi?name=${cveId}`,
-      ],
-      affectedProducts: [`cpe:2.3:a:${vendor.toLowerCase()}:${product.toLowerCase()}:*:*:*:*:*:*:*:*`],
-      weaknesses: ["CWE-79", "CWE-89", "CWE-20"],
-      exploitAvailable: Math.random() > 0.7,
-      vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-      source: "NVD" as const,
-    });
-  }
-
-  return mockCVEs;
-}
