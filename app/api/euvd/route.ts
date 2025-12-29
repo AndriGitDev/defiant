@@ -30,33 +30,34 @@ export async function GET(request: NextRequest) {
     let url = `${EUVD_API_BASE}/${endpoint}`;
     const params: Record<string, string> = {};
 
+    // Handle different endpoints based on EUVD API documentation
     if (endpoint === "search") {
       // Calculate date range
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
 
+      // EUVD search parameters per documentation
       params.fromDate = startDate.toISOString().split("T")[0];
       params.toDate = endDate.toISOString().split("T")[0];
+      params.fromScore = "0";
+      params.toScore = "10";
       params.size = "100";
 
       if (searchTerm) {
-        // Check if it's a CVE ID
-        if (/^CVE-\d{4}-\d+$/i.test(searchTerm.trim())) {
-          params.text = searchTerm.trim().toUpperCase();
-        } else {
-          params.text = searchTerm;
-        }
+        params.text = searchTerm;
       }
     } else if (endpoint === "enisaid" && cveId) {
-      // Direct EUVD ID lookup
+      // Direct EUVD ID lookup - parameter is 'id' per documentation
       params.id = cveId;
     }
+    // For lastvulnerabilities, criticalvulnerabilities, exploitedvulnerabilities
+    // No parameters needed - they return their fixed result sets
 
     console.log(`[EUVD API Route] Fetching from ${url} with params:`, params);
 
     const response = await axios.get(url, {
-      params,
+      params: Object.keys(params).length > 0 ? params : undefined,
       headers: {
         "Accept": "application/json",
         "User-Agent": "Defiant-CVE-Tracker/1.0",
@@ -65,7 +66,14 @@ export async function GET(request: NextRequest) {
     });
 
     const data = response.data;
-    const vulnCount = Array.isArray(data) ? data.length : (data.items?.length || 0);
+
+    // Log response structure for debugging
+    console.log(`[EUVD API Route] Response type: ${typeof data}, isArray: ${Array.isArray(data)}`);
+    if (data && typeof data === 'object') {
+      console.log(`[EUVD API Route] Response keys: ${Object.keys(data).slice(0, 10).join(', ')}`);
+    }
+
+    const vulnCount = Array.isArray(data) ? data.length : (data.items?.length || data.content?.length || (data.id ? 1 : 0));
     console.log(`[EUVD API Route] Response: ${vulnCount} vulnerabilities found`);
 
     return NextResponse.json({
@@ -78,6 +86,7 @@ export async function GET(request: NextRequest) {
 
     if (error.response) {
       console.error("[EUVD API Route] API error:", error.response.status, error.response.statusText);
+      console.error("[EUVD API Route] Error data:", JSON.stringify(error.response.data).slice(0, 500));
     }
 
     return NextResponse.json(
