@@ -15,25 +15,34 @@ function getSeverity(score: number): CVEItem["severity"] {
 
 // Map EUVD response to our CVEItem format
 function mapEUVDToCVEItem(vuln: any): CVEItem {
-  // EUVD uses different field names
-  const score = vuln.baseScore || vuln.cvssScore || 0;
-  const cveId = vuln.aliases?.find((a: string) => a.startsWith("CVE-")) || vuln.id || "";
+  // EUVD uses different field names - handle various response formats
+  const score = vuln.baseScore || vuln.cvssScore || vuln.cvss?.baseScore || 0;
+
+  // Get the ID - could be EUVD ID or CVE ID
+  // EUVD API might return: id, euvdId, aliases (array with CVE IDs)
+  const euvdId = vuln.euvdId || vuln.id || "";
+  const cveId = vuln.aliases?.find((a: string) => a?.startsWith?.("CVE-"))
+    || vuln.cveId
+    || (euvdId.startsWith("CVE-") ? euvdId : "");
+
+  // Use EUVD ID as display ID if no CVE ID available
+  const displayId = cveId || euvdId;
 
   return {
-    id: `euvd-${vuln.id || cveId}`,
-    cveId: cveId,
-    description: vuln.description || vuln.summary || "No description available",
+    id: `euvd-${euvdId || cveId || Math.random().toString(36)}`,
+    cveId: displayId,
+    description: vuln.description || vuln.summary || vuln.title || "No description available",
     severity: getSeverity(score),
     score: score,
-    publishedDate: vuln.datePublished || vuln.published || new Date().toISOString(),
-    lastModifiedDate: vuln.dateUpdated || vuln.lastModified || new Date().toISOString(),
+    publishedDate: vuln.datePublished || vuln.published || vuln.publishedDate || new Date().toISOString(),
+    lastModifiedDate: vuln.dateUpdated || vuln.lastModified || vuln.modifiedDate || new Date().toISOString(),
     references: vuln.references?.map((ref: any) => typeof ref === "string" ? ref : ref.url) || [],
     affectedProducts: vuln.products?.map((p: any) =>
       typeof p === "string" ? p : `cpe:2.3:a:${p.vendor || "unknown"}:${p.product || "unknown"}:*:*:*:*:*:*:*:*`
-    ) || [],
-    weaknesses: vuln.cwe ? [vuln.cwe] : [],
-    exploitAvailable: vuln.exploited === true || vuln.isExploited === true,
-    vector: vuln.cvssVector || vuln.vectorString,
+    ) || vuln.affectedProducts || [],
+    weaknesses: vuln.cwe ? (Array.isArray(vuln.cwe) ? vuln.cwe : [vuln.cwe]) : [],
+    exploitAvailable: vuln.exploited === true || vuln.isExploited === true || vuln.knownExploited === true,
+    vector: vuln.cvssVector || vuln.vectorString || vuln.cvss?.vectorString,
     source: "EUVD" as const,
   };
 }
@@ -66,14 +75,15 @@ export async function fetchEUVDCVEs(days: number = 90): Promise<CVEItem[]> {
       return [];
     }
 
-    // Map and deduplicate by CVE ID
+    // Map and deduplicate by ID (CVE ID or EUVD ID)
     const seen = new Set<string>();
     const mappedCVEs: CVEItem[] = [];
 
     for (const vuln of allVulns) {
       const mapped = mapEUVDToCVEItem(vuln);
-      if (mapped.cveId && !seen.has(mapped.cveId)) {
-        seen.add(mapped.cveId);
+      const uniqueKey = mapped.cveId || mapped.id;
+      if (uniqueKey && !seen.has(uniqueKey)) {
+        seen.add(uniqueKey);
         mappedCVEs.push(mapped);
       }
     }
