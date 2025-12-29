@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { CVEItem, FilterState } from "@/lib/types";
-import { fetchCVEsFromAllSources } from "@/lib/vulnerabilityApi";
-import { Loader2, Database } from "lucide-react";
+import { fetchCVEsFromAllSources, searchCVEs } from "@/lib/vulnerabilityApi";
+import { Loader2, Database, Search } from "lucide-react";
 
 interface TimelineViewProps {
   filters: FilterState;
@@ -11,14 +11,34 @@ interface TimelineViewProps {
   onCVEsLoad?: (cves: CVEItem[]) => void;
 }
 
+// Debounce helper
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
 export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: TimelineViewProps) {
   const [cves, setCves] = useState<CVEItem[]>([]);
+  const [searchResults, setSearchResults] = useState<CVEItem[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Debounce search term to avoid too many API calls
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, 500);
+
+  // Check if search term looks like a CVE ID
+  const isCVEIdSearch = /^CVE-\d{4}-\d+$/i.test(debouncedSearchTerm.trim());
+
+  // Load CVEs based on date range
   useEffect(() => {
     async function loadCVEs() {
       setLoading(true);
+      setSearchResults(null);
       const data = await fetchCVEsFromAllSources(parseInt(filters.dateRange), filters.dataSource);
       setCves(data);
       onCVEsLoad?.(data);
@@ -28,10 +48,37 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
     loadCVEs();
   }, [filters.dateRange, filters.dataSource, onCVEsLoad]);
 
+  // Search API when CVE ID is entered
+  useEffect(() => {
+    async function searchForCVE() {
+      if (!isCVEIdSearch || !debouncedSearchTerm.trim()) {
+        setSearchResults(null);
+        return;
+      }
+
+      setSearching(true);
+      try {
+        const results = await searchCVEs(debouncedSearchTerm.trim(), filters.dataSource);
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+      }
+      setSearching(false);
+    }
+
+    searchForCVE();
+  }, [debouncedSearchTerm, isCVEIdSearch, filters.dataSource]);
+
+  // Use search results if we have them (CVE ID search), otherwise filter local CVEs
+  const baseCVEs = searchResults !== null ? searchResults : cves;
+
   // Filter CVEs based on search, severity, exploit availability, and vendor
-  const filteredCVEs = cves.filter((cve) => {
+  const filteredCVEs = baseCVEs.filter((cve) => {
     const matchesSeverity = filters.severity === "all" || cve.severity === filters.severity;
+    // Skip local search filter if we already did an API search
     const matchesSearch =
+      searchResults !== null ||
       !filters.searchTerm ||
       cve.cveId.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
       cve.description.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
@@ -83,6 +130,17 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-cyber-blue animate-spin mx-auto mb-4" />
           <p className="text-cyber-text-dim text-lg">Loading CVE data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (searching) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <Search className="w-12 h-12 text-cyber-purple animate-pulse mx-auto mb-4" />
+          <p className="text-cyber-text-dim text-lg">Searching for {debouncedSearchTerm}...</p>
         </div>
       </div>
     );
@@ -184,13 +242,17 @@ export default function TimelineView({ filters, onSelectCVE, onCVEsLoad }: Timel
         <div className="text-center py-20 panel-bg rounded-lg">
           <Database className="w-16 h-16 text-cyber-text-dim mx-auto mb-4 opacity-50" />
           <p className="text-cyber-text-dim text-lg">
-            {cves.length === 0
+            {searchResults !== null && searchResults.length === 0
+              ? `No CVE found matching "${debouncedSearchTerm}"`
+              : cves.length === 0
               ? "Unable to load CVE data from NVD API"
               : "No vulnerabilities match your filters"
             }
           </p>
           <p className="text-cyber-text-dim/70 text-sm mt-2">
-            {cves.length === 0
+            {searchResults !== null && searchResults.length === 0
+              ? "Check the CVE ID format (e.g., CVE-2025-55182) and try again"
+              : cves.length === 0
               ? "Configure NVD_API_KEY environment variable for reliable access to CVE data"
               : "Try adjusting your search criteria"
             }
