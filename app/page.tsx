@@ -13,7 +13,7 @@ export default function Home() {
   const [selectedCVE, setSelectedCVE] = useState<CVEItem | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     severity: "all",
-    dateRange: "30",
+    dateRange: "90",
     searchTerm: "",
     dataSource: "ALL",
   });
@@ -23,7 +23,7 @@ export default function Home() {
   const handleResetFilters = () => {
     setFilters({
       severity: "all",
-      dateRange: "30",
+      dateRange: "90",
       searchTerm: "",
       dataSource: "ALL",
     });

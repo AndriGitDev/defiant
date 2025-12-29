@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     await waitForRateLimit();
 
     const searchParams = request.nextUrl.searchParams;
-    const days = parseInt(searchParams.get("days") || "30");
+    const days = parseInt(searchParams.get("days") || "90");
     const searchTerm = searchParams.get("search");
 
     const endDate = new Date();
@@ -32,10 +32,18 @@ export async function GET(request: NextRequest) {
 
     const params: any = {};
 
+    // Check if search term is a CVE ID pattern (e.g., CVE-2025-55182)
+    const cveIdPattern = /^CVE-\d{4}-\d+$/i;
+
     if (searchTerm) {
-      // Search query
-      params.keywordSearch = searchTerm;
-      params.resultsPerPage = 50;
+      if (cveIdPattern.test(searchTerm.trim())) {
+        // Direct CVE ID lookup - use cveId parameter for exact match
+        params.cveId = searchTerm.trim().toUpperCase();
+      } else {
+        // Keyword search for descriptions, products, etc.
+        params.keywordSearch = searchTerm;
+        params.resultsPerPage = 50;
+      }
     } else {
       // Date range query - using pubStartDate to only get recently PUBLISHED CVEs
       // This prevents old CVEs from 2015 that were recently modified from showing up
