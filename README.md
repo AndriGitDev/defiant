@@ -15,9 +15,9 @@ A stunning cyberpunk-themed web application that visualizes real-time CVE (Commo
 - **Responsive UI**: Glass-morphism panels with border glow effects
 
 ### 🔒 Security Intelligence
-- **Real-time CVE Data**: Fetches latest vulnerabilities from NIST NVD API
-- **Historical Breaches**: Curated database of major security incidents (Equifax, SolarWinds, Log4Shell, etc.)
-- **CVSS Scoring**: Visual severity indicators (CRITICAL, HIGH, MEDIUM, LOW)
+- **Unified Vulnerability Data**: Aggregates CVEs from NIST NVD and EUVD for comprehensive coverage.
+- **Historical Breaches**: Curated database of major security incidents (Equifax, SolarWinds, Log4Shell, etc.).
+- **CVSS Scoring**: Visual severity indicators (CRITICAL, HIGH, MEDIUM, LOW).
 - **Detailed Analysis**: Complete CVE details including affected products, weaknesses (CWE), references, and attack vectors
 
 ### 🔍 Advanced Filtering
@@ -36,53 +36,91 @@ A stunning cyberpunk-themed web application that visualizes real-time CVE (Commo
 ### Prerequisites
 - Node.js 18+ and npm
 
-### Installation
+### Installation & Setup
 
-```bash
-# Clone the repository
-git clone https://github.com/AndriGitDev/defiant.git
-cd defiant
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/AndriGitDev/defiant.git
+   cd defiant
+   ```
 
-# Install dependencies
-npm install
+2. **Set up environment variables**
+   - Copy `.env.example` to `.env.local`:
+     ```bash
+     cp .env.example .env.local
+     ```
+   - Add your Neon PostgreSQL connection string to `.env.local`:
+     ```
+     DATABASE_URL="your_postgres_connection_string"
+     ```
+   - **(Optional)** Add your NVD API key for a higher request rate limit:
+     ```
+     NVD_API_KEY="your_nvd_api_key"
+     ```
 
-# Run development server
-npm run dev
-```
+3. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Run database migrations**
+   - This will sync your database schema with the Drizzle ORM definitions.
+   ```bash
+   npm run db:push
+   ```
+
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
 Visit `http://localhost:3000` to see the app in action!
+
+### Database Management
+
+- **Generate Migrations**: After changing the schema in `lib/db/schema.ts`, generate a new migration:
+  ```bash
+  npm run db:generate
+  ```
+- **Apply Migrations**: To apply generated migrations to the database:
+  ```bash
+  npm run db:migrate
+  ```
+- **Drizzle Studio**: To open a local GUI for your database:
+  ```bash
+  npm run db:studio
+  ```
 
 ## 🏗️ Project Structure
 
 ```
 defiant/
-├── app/
-│   ├── layout.tsx          # Root layout with metadata
-│   ├── page.tsx            # Main page component
-│   └── globals.css         # Global styles & animations
-├── components/
-│   ├── CyberBackground.tsx # 3D Three.js background
-│   ├── Header.tsx          # App header with branding
-│   ├── StatsPanel.tsx      # Statistics dashboard
-│   ├── SearchPanel.tsx     # Search & filter controls
-│   ├── TimelineView.tsx    # CVE grid/timeline view
-│   └── CVEDetailModal.tsx  # Detailed CVE modal
+├── app/                  # Main application components
+├── components/           # Reusable React components
+├── drizzle/              # Drizzle ORM migration files
 ├── lib/
-│   ├── types.ts            # TypeScript interfaces
-│   ├── nvdApi.ts           # NVD API integration
-│   └── breaches.ts         # Historical breach database
-└── public/                 # Static assets
+│   ├── db/               # Drizzle schema and utilities
+│   ├── breaches.ts       # Static historical breach data
+│   ├── euvdApi.ts        # EUVD API integration
+│   ├── nvdApi.ts         # NVD API integration
+│   ├── types.ts          # Core TypeScript types
+│   └── vulnerabilityApi.ts # Unified vulnerability API
+└── public/               # Static assets (fonts, images)
 ```
 
 ## 🎯 Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
+- **Database**: PostgreSQL (Neon) with Drizzle ORM
 - **3D Graphics**: Three.js with React Three Fiber
-- **Styling**: Tailwind CSS with custom cyberpunk theme
+- **Styling**: Tailwind CSS
 - **Animations**: Framer Motion
+- **Analytics**: Vercel Analytics
 - **Icons**: Lucide React
-- **API**: NIST NVD CVE Database 2.0
+- **Data Sources**:
+  - NIST National Vulnerability Database (NVD)
+  - European Union Vulnerability Database (EUVD)
 
 ## 🌐 Deploy to Vercel
 
@@ -101,17 +139,6 @@ npx vercel --prod
 ```
 
 The app will be live at your Vercel domain!
-
-## 🔑 API Configuration (Optional)
-
-For higher rate limits on NVD API requests:
-
-1. Request an API key at [NVD Developer Portal](https://nvd.nist.gov/developers/request-an-api-key)
-2. Create `.env.local`:
-   ```bash
-   NVD_API_KEY=your_api_key_here
-   ```
-3. Update `lib/nvdApi.ts` to include the API key in headers
 
 ## 🎨 Customization
 
