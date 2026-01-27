@@ -129,10 +129,11 @@ export default function CyberBackground() {
     window.addEventListener("resize", handleResize);
 
     // Cleanup
+    const currentContainer = containerRef.current;
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
-      containerRef.current?.removeChild(renderer.domElement);
+      currentContainer?.removeChild(renderer.domElement);
       renderer.dispose();
     };
   }, []);

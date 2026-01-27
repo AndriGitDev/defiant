@@ -178,11 +178,17 @@ Add historical breaches to `lib/breaches.ts`:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started.
+
+All contributors are expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## 🛡️ Security
+
+If you discover a security vulnerability, please see our [Security Policy](SECURITY.md) for reporting instructions.
 
 ## 📄 License
 
-MIT License - feel free to use this project for educational and commercial purposes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Credits
 
