@@ -11,7 +11,7 @@ import {
 import { mapNVDToCVEItem } from "@/lib/nvdApi";
 
 const NVD_API_BASE = "https://services.nvd.nist.gov/rest/json/cves/2.0";
-const NVD_API_KEY = process.env.NVD_API_KEY || process.env.NEXT_PUBLIC_NVD_API_KEY;
+const NVD_API_KEY = process.env.NVD_API_KEY;
 const DATABASE_URL = process.env.DATABASE_URL
   || process.env.POSTGRES_URL
   || process.env.POSTGRES_PRISMA_URL
