@@ -19,7 +19,7 @@ export default function RootLayout({
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://swetrixapi.kindra.is/log/noscript?pid=rTi7PMrdRHsb"
+            src="https://swetrixapi.kastro.is/log/noscript?pid=30uKSFSkKVTJ"
             alt=""
             referrerPolicy="no-referrer-when-downgrade"
           />
@@ -28,23 +28,23 @@ export default function RootLayout({
       <body className="antialiased scanline">
         {children}
         <Script
-          src="https://swetrix.org/swetrix.js"
+          src="https://swetrix.kastro.is/swetrix.js"
           strategy="afterInteractive"
         />
         <Script id="swetrix-init" strategy="afterInteractive">
           {`
             document.addEventListener('DOMContentLoaded', function() {
               if (window.swetrix) {
-                swetrix.init('rTi7PMrdRHsb', {
-                  apiURL: 'https://swetrixapi.kindra.is/log',
+                swetrix.init('30uKSFSkKVTJ', {
+                  apiURL: 'https://swetrixapi.kastro.is/log',
                 });
                 swetrix.trackViews();
               }
             });
             // Also try immediately in case DOMContentLoaded already fired
             if (document.readyState !== 'loading' && window.swetrix) {
-              swetrix.init('rTi7PMrdRHsb', {
-                apiURL: 'https://swetrixapi.kindra.is/log',
+              swetrix.init('30uKSFSkKVTJ', {
+                apiURL: 'https://swetrixapi.kastro.is/log',
               });
               swetrix.trackViews();
             }
