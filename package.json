@@ -16,12 +16,12 @@
     "@neondatabase/serverless": "^1.0.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
-    "axios": "^1.7.9",
+    "axios": "^1.14.0",
     "date-fns": "^4.1.0",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "^0.45.2",
     "framer-motion": "^12.38.0",
-    "lucide-react": "^0.577.0",
-    "next": "^16.2.0",
+    "lucide-react": "^1.7.0",
+    "next": "^16.2.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "three": "^0.183.2"
@@ -31,17 +31,17 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.183.1",
     "autoprefixer": "^10.4.27",
-    "dotenv": "^17.3.1",
+    "dotenv": "^17.4.1",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10",
-    "eslint-config-next": "^16.2.0",
-    "postcss": "^8.5.8",
+    "eslint-config-next": "^16.2.2",
+    "postcss": "^8.5.9",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.6.3"
+    "typescript": "^6.0.2"
   }
 }
