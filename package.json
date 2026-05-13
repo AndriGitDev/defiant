@@ -13,35 +13,35 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
+    "@neondatabase/serverless": "^1.1.0",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
-    "axios": "^1.7.9",
+    "@react-three/fiber": "^9.6.1",
+    "axios": "^1.16.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.38.0",
-    "lucide-react": "^0.577.0",
-    "next": "^16.2.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "three": "^0.183.2"
+    "lucide-react": "^1.14.0",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "three": "^0.184.0"
   },
   "overrides": {
     "esbuild": ">=0.25.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
-    "@types/node": "^25.5.0",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/node": "^25.7.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/three": "^0.183.1",
-    "autoprefixer": "^10.4.27",
-    "dotenv": "^17.3.1",
+    "@types/three": "^0.184.1",
+    "autoprefixer": "^10.5.0",
+    "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
-    "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.3",
+    "eslint": "^10.3.0",
+    "eslint-config-next": "^16.2.6",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.6.3"
+    "typescript": "^6.0.3"
   }
 }
