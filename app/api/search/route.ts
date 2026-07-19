@@ -9,6 +9,7 @@ import {
   checkDatabaseConnection,
 } from "@/lib/db";
 import type { DataSource } from "@/lib/types";
+import { boundedInteger, boundedText, enforceRateLimit } from "@/lib/security";
 
 const DATABASE_URL = process.env.DATABASE_URL
   || process.env.POSTGRES_URL
@@ -16,6 +17,9 @@ const DATABASE_URL = process.env.DATABASE_URL
   || process.env.POSTGRES_URL_NON_POOLING;
 
 export async function GET(request: NextRequest) {
+  const limited = enforceRateLimit(request, "search", 120);
+  if (limited) return limited;
+
   // Check if database is configured
   if (!DATABASE_URL) {
     return NextResponse.json(
@@ -30,14 +34,22 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get("q") || searchParams.get("query");
-    const source = (searchParams.get("source") || "ALL") as DataSource;
-    const severity = searchParams.get("severity");
-    const days = parseInt(searchParams.get("days") || "90");
+    const rawQuery = searchParams.get("q") || searchParams.get("query");
+    const query = boundedText(rawQuery, 200);
+    const rawSource = searchParams.get("source") || "ALL";
+    const source: DataSource = ["ALL", "NVD", "EUVD"].includes(rawSource) ? rawSource as DataSource : "ALL";
+    const rawSeverity = searchParams.get("severity")?.toUpperCase() || null;
+    const severity = rawSeverity && ["CRITICAL", "HIGH", "MEDIUM", "LOW", "NONE"].includes(rawSeverity) ? rawSeverity : null;
+    const days = boundedInteger(searchParams.get("days"), 90, 1, 3650);
     const exploitOnly = searchParams.get("exploit") === "true";
-    const vendor = searchParams.get("vendor");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const rawVendor = searchParams.get("vendor");
+    const vendor = boundedText(rawVendor, 200);
+    const limit = boundedInteger(searchParams.get("limit"), 50, 1, 100);
     const action = searchParams.get("action");
+
+    if ((rawQuery !== null && !query) || (rawVendor !== null && !vendor)) {
+      return NextResponse.json({ success: false, error: "Invalid query" }, { status: 400 });
+    }
 
     // Handle special actions
     if (action === "stats") {

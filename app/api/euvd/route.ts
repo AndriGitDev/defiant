@@ -10,6 +10,7 @@ import {
   getExploitedCVEs,
 } from "@/lib/db";
 import { mapEUVDToCVEItem, extractVulnerabilities } from "@/lib/euvdApi";
+import { boundedInteger, boundedText, enforceRateLimit, mayForceRefresh } from "@/lib/security";
 
 const EUVD_API_BASE = "https://euvdservices.enisa.europa.eu/api";
 const DATABASE_URL = process.env.DATABASE_URL
@@ -19,16 +20,28 @@ const DATABASE_URL = process.env.DATABASE_URL
 
 // Rate limiting for EUVD API
 let lastRequestTime = 0;
+let requestQueue = Promise.resolve();
 const REQUEST_DELAY = 1000; // 1 second between requests
+const ALLOWED_ENDPOINTS = new Set([
+  "search",
+  "enisaid",
+  "exploitedvulnerabilities",
+  "lastvulnerabilities",
+  "criticalvulnerabilities",
+]);
 
 async function waitForRateLimit() {
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
-  if (timeSinceLastRequest < REQUEST_DELAY) {
-    const waitTime = REQUEST_DELAY - timeSinceLastRequest;
-    await new Promise(resolve => setTimeout(resolve, waitTime));
+  let release!: () => void;
+  const previous = requestQueue;
+  requestQueue = new Promise<void>(resolve => { release = resolve; });
+  await previous;
+  try {
+    const waitTime = Math.max(0, REQUEST_DELAY - (Date.now() - lastRequestTime));
+    if (waitTime > 0) await new Promise(resolve => setTimeout(resolve, waitTime));
+    lastRequestTime = Date.now();
+  } finally {
+    release();
   }
-  lastRequestTime = Date.now();
 }
 
 // Fetch from EUVD API and store in cache
@@ -76,12 +89,26 @@ async function fetchFromEUVDAndCache(
 
 export async function GET(request: NextRequest) {
   try {
+    const limited = enforceRateLimit(request, "euvd", 60);
+    if (limited) return limited;
+
     const searchParams = request.nextUrl.searchParams;
     const endpoint = searchParams.get("endpoint") || "search";
-    const days = parseInt(searchParams.get("days") || "90");
-    const searchTerm = searchParams.get("search");
-    const cveId = searchParams.get("cveId");
-    const forceRefresh = searchParams.get("refresh") === "true";
+    if (!ALLOWED_ENDPOINTS.has(endpoint)) {
+      return NextResponse.json({ success: false, error: "Unsupported endpoint" }, { status: 400 });
+    }
+    const days = boundedInteger(searchParams.get("days"), 90, 1, 365);
+    const rawSearchTerm = searchParams.get("search");
+    const searchTerm = boundedText(rawSearchTerm, 200);
+    const rawCveId = searchParams.get("cveId");
+    const cveId = boundedText(rawCveId, 64);
+    if ((rawSearchTerm !== null && !searchTerm) || (rawCveId !== null && !cveId)) {
+      return NextResponse.json({ success: false, error: "Invalid query" }, { status: 400 });
+    }
+    if (endpoint === "enisaid" && (!cveId || !/^(?:CVE|EUVD)-\d{4}-\d+$/i.test(cveId))) {
+      return NextResponse.json({ success: false, error: "Invalid vulnerability ID" }, { status: 400 });
+    }
+    const forceRefresh = searchParams.get("refresh") === "true" && mayForceRefresh(request);
 
     let url = `${EUVD_API_BASE}/${endpoint}`;
     const params: Record<string, string> = {};

@@ -9,6 +9,7 @@ import {
   updateCacheMetadata,
 } from "@/lib/db";
 import { mapNVDToCVEItem } from "@/lib/nvdApi";
+import { boundedInteger, boundedText, enforceRateLimit, mayForceRefresh } from "@/lib/security";
 
 const NVD_API_BASE = "https://services.nvd.nist.gov/rest/json/cves/2.0";
 const NVD_API_KEY = process.env.NVD_API_KEY;
@@ -19,16 +20,21 @@ const DATABASE_URL = process.env.DATABASE_URL
 
 // Rate limiting
 let lastRequestTime = 0;
+let requestQueue = Promise.resolve();
 const REQUEST_DELAY = NVD_API_KEY ? 600 : 6000;
 
 async function waitForRateLimit() {
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
-  if (timeSinceLastRequest < REQUEST_DELAY) {
-    const waitTime = REQUEST_DELAY - timeSinceLastRequest;
-    await new Promise(resolve => setTimeout(resolve, waitTime));
+  let release!: () => void;
+  const previous = requestQueue;
+  requestQueue = new Promise<void>(resolve => { release = resolve; });
+  await previous;
+  try {
+    const waitTime = Math.max(0, REQUEST_DELAY - (Date.now() - lastRequestTime));
+    if (waitTime > 0) await new Promise(resolve => setTimeout(resolve, waitTime));
+    lastRequestTime = Date.now();
+  } finally {
+    release();
   }
-  lastRequestTime = Date.now();
 }
 
 // Fetch from NVD API and store in cache
@@ -82,10 +88,17 @@ async function fetchFromNVDAndCache(params: Record<string, string>, cacheKey: st
 
 export async function GET(request: NextRequest) {
   try {
+    const limited = enforceRateLimit(request, "nvd", 60);
+    if (limited) return limited;
+
     const searchParams = request.nextUrl.searchParams;
-    const days = parseInt(searchParams.get("days") || "90");
-    const searchTerm = searchParams.get("search");
-    const forceRefresh = searchParams.get("refresh") === "true";
+    const days = boundedInteger(searchParams.get("days"), 90, 1, 365);
+    const rawSearchTerm = searchParams.get("search");
+    const searchTerm = boundedText(rawSearchTerm, 200);
+    if (rawSearchTerm !== null && !searchTerm) {
+      return NextResponse.json({ success: false, error: "Invalid search query" }, { status: 400 });
+    }
+    const forceRefresh = searchParams.get("refresh") === "true" && mayForceRefresh(request);
 
     const endDate = new Date();
     const startDate = new Date();
