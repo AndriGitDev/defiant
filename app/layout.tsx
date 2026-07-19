@@ -28,7 +28,9 @@ export default function RootLayout({
       <body className="antialiased scanline">
         {children}
         <Script
-          src="https://cdn.jsdelivr.net/npm/swetrix@latest/dist/swetrix.js"
+          src="https://cdn.jsdelivr.net/npm/swetrix@4.4.0/dist/swetrix.js"
+          integrity="sha384-FJ43Z1wutnoz28042fgO8YM6xIvC9FGaFuwKnd4THHojerDiGYd0IL1DUJycX3xE"
+          crossOrigin="anonymous"
           strategy="afterInteractive"
         />
         <Script id="swetrix-init" strategy="afterInteractive">
