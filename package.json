@@ -16,7 +16,7 @@
     "@neondatabase/serverless": "^1.0.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
-    "axios": "^1.7.9",
+    "axios": "^1.18.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.38.0",
